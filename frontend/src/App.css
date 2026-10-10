@@ -1,4 +1,3 @@
-
 /* ========================================
    GLOBAL STYLES
 ======================================== */
@@ -395,7 +394,7 @@ button {
   box-shadow: 0 0 0 3px rgb(232 121 56 / 9%);
 }
 
-.search-box > span {
+.search-box>span {
   font-size: 25px;
   line-height: 1;
 }
@@ -911,7 +910,7 @@ button {
   font-size: 12px;
 }
 
-.restaurant-info > strong {
+.restaurant-info>strong {
   color: #c96b25;
   font-size: 13px;
 }
@@ -968,5 +967,1348 @@ button {
   .restaurant-menu-heading img {
     width: 100%;
     height: 180px;
+  }
+}
+
+/* ===== FINDS CART PAGE ===== */
+
+.cart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.cart-items-panel,
+.cart-summary {
+  min-width: 0;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid #e8edf4;
+  border-radius: 18px;
+  box-shadow: 0 5px 20px rgba(30, 50, 90, 0.04);
+}
+
+.cart-items-panel .section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.cart-item>img {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.cart-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-item-info h3,
+.cart-item-info p {
+  margin: 0 0 7px;
+}
+
+.cart-item-info h3 {
+  font-size: 16px;
+}
+
+.cart-item-info p {
+  color: #737d8d;
+  font-size: 13px;
+}
+
+.cart-item-info>strong {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.cart-item-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.cart-remove-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #dc3545;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cart-continue-button {
+  margin-top: 18px;
+  padding: 11px 16px;
+  border: 1px solid #d9e2f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-summary h2 {
+  margin-top: 0;
+}
+
+.cart-voucher {
+  padding: 16px 0;
+  border-top: 1px solid #edf0f5;
+  border-bottom: 1px solid #edf0f5;
+  margin-bottom: 16px;
+}
+
+.cart-voucher h3 {
+  font-size: 15px;
+}
+
+.cart-voucher-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px dashed #a9bde8;
+  border-radius: 10px;
+  background: #f6f8ff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cart-voucher-option strong {
+  color: #2563eb;
+}
+
+.cart-voucher-option span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.cart-voucher-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cart-voucher-form input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #d9e2f0;
+  border-radius: 8px;
+}
+
+.cart-voucher-form button,
+.cart-checkout-button {
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  padding: 11px 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-voucher-message {
+  font-size: 13px;
+  color: #dc3545;
+}
+
+.cart-voucher-message.success,
+.cart-discount {
+  color: #16803d;
+}
+
+.cart-bill-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.cart-final-total {
+  padding-top: 16px;
+  border-top: 1px solid #e8edf4;
+  font-size: 18px;
+}
+
+.cart-checkout-button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+}
+
+.cart-checkout-note {
+  color: #737d8d;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cart-empty {
+  padding: 55px 20px;
+  border: 1px solid #e8edf4;
+  border-radius: 18px;
+  background: #fff;
+  text-align: center;
+}
+
+.cart-empty-icon {
+  margin-bottom: 12px;
+  font-size: 48px;
+}
+
+.cart-empty p {
+  color: #737d8d;
+}
+
+@media (max-width: 850px) {
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .cart-item {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .cart-item>img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .cart-items-panel,
+  .cart-summary {
+    padding: 14px;
+  }
+
+  .cart-item-info h3 {
+    font-size: 14px;
+  }
+}
+
+/* ========================================
+   FINDS WELLNESS
+======================================== */
+
+.wellness-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.wellness-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 35px;
+  padding: 32px;
+  overflow: hidden;
+  border: 1px solid #d8eadb;
+  border-radius: 20px;
+  background: linear-gradient(120deg, #edf8ed, #d9efdc);
+}
+
+.wellness-hero-copy {
+  max-width: 620px;
+}
+
+.wellness-kicker {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #39734a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+.wellness-hero h2 {
+  margin: 0;
+  color: #214d34;
+  font-size: clamp(25px, 3vw, 36px);
+  letter-spacing: -1px;
+}
+
+.wellness-hero-copy>p {
+  max-width: 520px;
+  color: #617465;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.wellness-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.wellness-hero-tags span {
+  padding: 8px 11px;
+  border: 1px solid #d2e7d5;
+  border-radius: 20px;
+  background: rgb(255 255 255 / 75%);
+  color: #376447;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.wellness-hero-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border: 1px solid rgb(255 255 255 / 80%);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 70%);
+  font-size: 57px;
+}
+
+.wellness-intro {
+  margin-bottom: 16px;
+}
+
+.wellness-intro h2,
+.wellness-results-heading h2 {
+  margin: 0;
+  color: #243b2c;
+  font-size: 23px;
+  letter-spacing: -0.6px;
+}
+
+.wellness-intro>div>p:last-child {
+  margin-top: 9px;
+  color: #777d75;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.wellness-goal-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.wellness-goal-chip {
+  padding: 11px 15px;
+  border: 1px solid #e0e8df;
+  border-radius: 24px;
+  background: #fff;
+  color: #59695b;
+  font-size: 12px;
+  font-weight: 650;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.wellness-goal-chip:hover {
+  border-color: #8bb99a;
+}
+
+.wellness-goal-chip.selected {
+  border-color: #327448;
+  background: #e7f4e9;
+  color: #245c36;
+}
+
+.wellness-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 49px;
+  margin-bottom: 30px;
+  padding: 0 15px;
+  border: 1px solid #e1e9df;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.wellness-search:focus-within {
+  border-color: #79ad85;
+  box-shadow: 0 0 0 3px rgb(57 119 77 / 9%);
+}
+
+.wellness-search>span {
+  color: #718477;
+  font-size: 25px;
+}
+
+.wellness-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #26352b;
+  font-size: 13px;
+}
+
+.wellness-results-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.wellness-results-heading>span {
+  flex-shrink: 0;
+  color: #7b897c;
+  font-size: 12px;
+}
+
+.wellness-meal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.wellness-meal-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e5ebe2;
+  border-radius: 15px;
+  background: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wellness-meal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgb(40 80 45 / 9%);
+}
+
+.wellness-meal-image {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  background: #edf4e9;
+}
+
+.wellness-meal-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.wellness-meal-card:hover .wellness-meal-image img {
+  transform: scale(1.04);
+}
+
+.wellness-meal-label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 7px 10px;
+  border-radius: 20px;
+  background: rgb(255 255 255 / 94%);
+  color: #347046;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.wellness-meal-content {
+  padding: 15px;
+}
+
+.wellness-meal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wellness-meal-tags span {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #eef6ec;
+  color: #43734b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.wellness-meal-content h3 {
+  margin: 12px 0 7px;
+  color: #263b2b;
+  font-size: 16px;
+}
+
+.wellness-meal-description {
+  min-height: 57px;
+  margin: 0;
+  color: #798277;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.wellness-meal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 13px 0;
+  color: #728174;
+  font-size: 10px;
+}
+
+.wellness-meal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 13px;
+  border-top: 1px solid #edf0e9;
+}
+
+.wellness-meal-footer>strong {
+  color: #2e7040;
+  font-size: 17px;
+}
+
+.wellness-meal-footer>button {
+  padding: 9px 11px;
+  border: 1px solid #cde4d0;
+  border-radius: 8px;
+  background: #edf7ee;
+  color: #28633a;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.wellness-meal-footer>button:hover {
+  background: #dcefdc;
+}
+
+.wellness-meal-footer .quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wellness-meal-footer .quantity-controls button {
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  border: 1px solid #cde4d0;
+  border-radius: 7px;
+  background: #edf7ee;
+  color: #28633a;
+  font-weight: 800;
+}
+
+.wellness-meal-footer .quantity-controls span {
+  color: #263b2b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wellness-empty {
+  padding: 45px 20px;
+  border: 1px dashed #d8e6d7;
+  border-radius: 15px;
+  background: #fff;
+  text-align: center;
+}
+
+.wellness-empty>span {
+  font-size: 38px;
+}
+
+.wellness-empty h3 {
+  color: #294632;
+}
+
+.wellness-empty p {
+  color: #7b847a;
+  font-size: 13px;
+}
+
+.wellness-empty button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background: #28663b;
+  color: #fff;
+  font-weight: 650;
+}
+
+.wellness-disclaimer {
+  margin-top: 25px;
+  color: #899187;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1100px) {
+  .wellness-meal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .wellness-hero {
+    padding: 23px 18px;
+  }
+
+  .wellness-hero-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+  }
+
+  .wellness-hero-tags {
+    gap: 6px;
+  }
+
+  .wellness-goal-list {
+    gap: 7px;
+  }
+
+  .wellness-goal-chip {
+    padding: 9px 11px;
+    font-size: 11px;
+  }
+
+  .wellness-meal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wellness-meal-card {
+    display: grid;
+    grid-template-columns: 115px minmax(0, 1fr);
+  }
+
+  .wellness-meal-image {
+    height: 100%;
+    min-height: 230px;
+  }
+
+  .wellness-meal-content {
+    padding: 12px;
+  }
+
+  .wellness-meal-description {
+    min-height: 0;
+  }
+
+  .wellness-meal-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* ========================================
+   FINDS VIBRANT FOOD EXPLORER
+======================================== */
+
+.home-page {
+  background: #fff9f5;
+  color: #30241f;
+}
+
+.sidebar {
+  background: #fffdfb;
+  border-right-color: #f2e4dc;
+}
+
+.sidebar-logo {
+  color: #35231d;
+}
+
+.sidebar-logo span {
+  color: #f06436;
+}
+
+.sidebar-label {
+  color: #b2a098;
+}
+
+.category-button {
+  border-radius: 12px;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease;
+}
+
+.category-button:hover {
+  background: #fff0e8;
+  color: #d84d27;
+  transform: translateX(2px);
+}
+
+.category-button.active {
+  background: linear-gradient(110deg, #ffede3, #ffe2d2);
+  color: #ce4927;
+  box-shadow: inset 3px 0 #f06436;
+}
+
+.home-main {
+  max-width: 1650px;
+  padding-top: 32px;
+}
+
+.home-header h1 {
+  color: #30221d;
+  letter-spacing: -1.7px;
+}
+
+.home-header .eyebrow,
+.content-section .eyebrow {
+  color: #e65d35;
+}
+
+.header-description {
+  color: #88766e;
+}
+
+.cart-button {
+  border: 1px solid #f2d8ca;
+  background: #fff;
+  color: #c84929;
+  border-radius: 13px;
+  box-shadow: 0 4px 15px rgb(90 44 25 / 4%);
+}
+
+.cart-button:hover {
+  border-color: #f06436;
+  background: #fff5ef;
+}
+
+/* Search bar */
+
+.search-box {
+  min-height: 56px;
+  border: 1px solid #f0dfd5;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 5px 20px rgb(92 48 29 / 4%);
+}
+
+.search-box:focus-within {
+  border-color: #f28a65;
+  box-shadow: 0 0 0 4px rgb(240 100 54 / 10%);
+}
+
+.search-box>span {
+  color: #ef7049;
+}
+
+/* Main Discover hero */
+
+.finds-discover-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: center;
+  gap: 28px;
+  min-height: 370px;
+  margin: 8px 0 42px;
+  padding: clamp(25px, 4vw, 46px);
+  overflow: hidden;
+  border: 1px solid #ffd9c7;
+  border-radius: 27px;
+  background:
+    radial-gradient(ellipse at 0% 100%, rgb(255 184 126 / 30%), transparent 42%),
+    linear-gradient(125deg, #fff0e6 0%, #ffe4d5 48%, #ffd7c3 100%);
+  box-shadow: 0 15px 40px rgb(135 66 35 / 7%);
+}
+
+.finds-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 530px;
+}
+
+.finds-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid rgb(224 102 58 / 15%);
+  border-radius: 30px;
+  background: rgb(255 255 255 / 75%);
+  color: #c94c2a;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+}
+
+.finds-hero-content h2 {
+  margin: 22px 0 15px;
+  color: #35221b;
+  font-size: clamp(38px, 4.5vw, 61px);
+  font-weight: 850;
+  line-height: 1.06;
+  letter-spacing: -2.8px;
+}
+
+.finds-hero-content h2 span {
+  color: #ed6036;
+}
+
+.finds-hero-content>p {
+  max-width: 430px;
+  margin: 0;
+  color: #785b4e;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.finds-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.finds-hero-actions button {
+  min-height: 46px;
+  padding: 12px 17px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.finds-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid #e6532d;
+  background: #ef6038;
+  color: white;
+  box-shadow: 0 7px 16px rgb(206 73 39 / 20%);
+}
+
+.finds-hero-primary:hover {
+  background: #d94c29;
+  box-shadow: 0 10px 22px rgb(206 73 39 / 25%);
+  transform: translateY(-2px);
+}
+
+.finds-hero-primary span {
+  font-size: 17px;
+}
+
+.finds-hero-secondary {
+  border: 1px solid rgb(197 102 67 / 25%);
+  background: rgb(255 255 255 / 75%);
+  color: #9e442a;
+}
+
+.finds-hero-secondary:hover {
+  background: #fff;
+  transform: translateY(-2px);
+}
+
+.finds-hero-note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 24px;
+  color: #8c6757;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.finds-hero-note>span:first-child {
+  font-size: 18px;
+}
+
+.finds-hero-visual {
+  position: relative;
+  min-width: 0;
+  padding: 10px;
+}
+
+.finds-hero-visual>img {
+  display: block;
+  width: 100%;
+  height: 285px;
+  object-fit: cover;
+  border: 5px solid rgb(255 255 255 / 80%);
+  border-radius: 24px;
+  box-shadow: 0 20px 45px rgb(111 53 30 / 17%);
+  transform: rotate(2deg);
+  transition: transform 0.35s ease;
+}
+
+.finds-hero-visual:hover>img {
+  transform: rotate(0deg) scale(1.015);
+}
+
+.finds-hero-floating-card {
+  position: absolute;
+  right: -2px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  max-width: 255px;
+  padding: 14px 17px;
+  border: 1px solid #f5e2d8;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(74 39 24 / 13%);
+}
+
+.finds-floating-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #fff0e6;
+  font-size: 23px;
+}
+
+.finds-hero-floating-card>div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.finds-hero-floating-card strong {
+  color: #39271f;
+  font-size: 11px;
+}
+
+.finds-hero-floating-card>div>span {
+  color: #927b70;
+  font-size: 10px;
+}
+
+.finds-hero-decoration {
+  position: absolute;
+  color: #ef7149;
+  pointer-events: none;
+}
+
+.finds-decoration-one {
+  top: -6px;
+  right: 4px;
+  font-size: 34px;
+}
+
+.finds-decoration-two {
+  bottom: 26px;
+  left: -7px;
+  color: #f5a04e;
+  font-size: 30px;
+}
+
+/* Section headings */
+
+.section-heading {
+  margin-bottom: 22px;
+}
+
+.section-heading h2 {
+  color: #35251f;
+  font-size: clamp(21px, 2vw, 25px);
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.dish-count {
+  padding: 7px 11px;
+  border: 1px solid #f3e1d7;
+  border-radius: 20px;
+  background: #fff;
+  color: #b46a4b;
+  white-space: nowrap;
+}
+
+/* Cuisine cards */
+
+.cuisine-grid {
+  gap: 18px;
+}
+
+.cuisine-card {
+  border: 1px solid #f0e3da;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgb(81 47 30 / 3%);
+}
+
+.cuisine-card:hover {
+  border-color: #f4b49b;
+  box-shadow: 0 13px 28px rgb(107 55 31 / 10%);
+  transform: translateY(-4px);
+}
+
+.cuisine-image {
+  height: 165px;
+}
+
+.cuisine-card-info {
+  width: 100%;
+  min-height: 83px;
+  padding: 15px;
+  background: linear-gradient(180deg, #fff 0%, #fffaf7 100%);
+}
+
+.cuisine-card-info strong {
+  color: #392820;
+  font-size: 16px;
+}
+
+.cuisine-description {
+  color: #8e7b71;
+}
+
+.cuisine-card.selected {
+  outline: 2px solid #ef7149;
+  outline-offset: 2px;
+  background: #fff3ed;
+}
+
+/* Dish cards */
+
+.dish-grid {
+  gap: 20px;
+}
+
+.dish-card {
+  border: 1px solid #f0e3da;
+  border-radius: 18px;
+  box-shadow: 0 5px 20px rgb(77 43 27 / 4%);
+}
+
+.dish-card:hover {
+  border-color: #f3c2ad;
+  box-shadow: 0 15px 30px rgb(92 48 28 / 10%);
+  transform: translateY(-5px);
+}
+
+.dish-image {
+  height: 190px;
+  background: #fff0e6;
+}
+
+.dish-image img {
+  transition: transform 0.4s ease;
+}
+
+.dish-details {
+  padding: 16px;
+}
+
+.dish-cuisine {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #fff0e7;
+  color: #cf5733;
+  font-size: 9px;
+  letter-spacing: 0.7px;
+}
+
+.dish-details h3 {
+  margin: 11px 0 8px;
+  color: #382720;
+  font-size: 15px;
+}
+
+.dish-details>p:not(.dish-restaurant-name) {
+  min-height: 37px;
+  margin: 0 0 10px;
+  color: #89786e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dish-restaurant-name {
+  margin: 0 0 13px;
+  color: #b77a60;
+  font-size: 11px;
+}
+
+.dish-details>.category-button {
+  width: auto;
+  margin-bottom: 14px;
+  padding: 8px 10px;
+  border: 1px solid #f3d5c5;
+  background: #fff8f3;
+  color: #c35330;
+  font-size: 10px;
+}
+
+.dish-details>.category-button:hover {
+  background: #ffede3;
+}
+
+.dish-footer {
+  padding-top: 12px;
+  border-top: 1px solid #f5eae3;
+}
+
+.dish-footer>strong {
+  color: #d84f2c;
+  font-size: 17px;
+}
+
+.dish-footer>button {
+  border-color: #efb89e;
+  border-radius: 9px;
+  background: #fff0e6;
+  color: #c64b29;
+}
+
+.dish-footer>button:hover {
+  background: #ffdfcd;
+}
+
+/* Restaurant cards */
+
+.restaurant-grid {
+  gap: 22px;
+}
+
+.restaurant-card {
+  border-color: #f0e3da;
+  border-radius: 19px;
+  box-shadow: 0 5px 20px rgb(77 43 27 / 4%);
+}
+
+.restaurant-card:hover {
+  border-color: #f3c2ad;
+  box-shadow: 0 15px 32px rgb(92 48 28 / 10%);
+  transform: translateY(-5px);
+}
+
+.restaurant-image {
+  height: 195px;
+}
+
+.restaurant-info {
+  padding: 19px;
+}
+
+.restaurant-info h3 {
+  color: #39271f;
+  font-size: 17px;
+}
+
+.restaurant-info p {
+  color: #89786e;
+}
+
+.restaurant-meta span {
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: #fff3ec;
+  color: #b85a37;
+  font-size: 10px;
+}
+
+.restaurant-info>strong {
+  color: #e65d35;
+}
+
+/* Empty search results */
+
+.empty-results {
+  border-color: #f0cbb9;
+  background: #fffdfb;
+}
+
+/* Footer */
+
+.home-footer {
+  border-top-color: #f0e2d9;
+  color: #a08b80;
+}
+
+.home-footer strong {
+  color: #e65d35;
+}
+
+/* Responsive hero and layout */
+
+@media (max-width: 1100px) {
+  .finds-discover-hero {
+    gap: 18px;
+    padding: 28px;
+  }
+
+  .finds-hero-visual>img {
+    height: 245px;
+  }
+
+  .finds-hero-content h2 {
+    font-size: 43px;
+  }
+
+  .cuisine-image {
+    height: 140px;
+  }
+}
+
+@media (max-width: 760px) {
+  .sidebar-logo {
+    color: #35231d;
+  }
+
+  .category-list {
+    padding-bottom: 8px;
+  }
+
+  .category-list .category-button {
+    border: 1px solid #f2e3da;
+    background: #fff;
+  }
+
+  .category-list .category-button.active {
+    border-color: #f4b49b;
+    background: #ffede3;
+    box-shadow: none;
+  }
+
+  .finds-discover-hero {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    padding: 27px;
+    border-radius: 22px;
+  }
+
+  .finds-hero-content {
+    max-width: 100%;
+  }
+
+  .finds-hero-content h2 {
+    font-size: clamp(39px, 8vw, 53px);
+  }
+
+  .finds-hero-visual {
+    width: 100%;
+    padding: 6px 10px 20px;
+  }
+
+  .finds-hero-visual>img {
+    height: 250px;
+    transform: none;
+  }
+
+  .finds-hero-floating-card {
+    right: 0;
+    bottom: 0;
+  }
+
+  .cuisine-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .finds-discover-hero {
+    gap: 22px;
+    margin-bottom: 32px;
+    padding: 23px 18px;
+  }
+
+  .finds-hero-badge {
+    font-size: 9px;
+    letter-spacing: 0.6px;
+  }
+
+  .finds-hero-content h2 {
+    margin-top: 18px;
+    font-size: 40px;
+    letter-spacing: -1.8px;
+  }
+
+  .finds-hero-content>p {
+    font-size: 13px;
+  }
+
+  .finds-hero-actions {
+    gap: 8px;
+  }
+
+  .finds-hero-actions button {
+    padding: 11px 12px;
+    font-size: 11px;
+  }
+
+  .finds-hero-note {
+    align-items: flex-start;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  .finds-hero-visual>img {
+    height: 205px;
+    border-radius: 17px;
+  }
+
+  .finds-hero-floating-card {
+    right: -2px;
+    max-width: 225px;
+    padding: 10px 12px;
+  }
+
+  .finds-floating-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 19px;
+  }
+
+  .finds-hero-floating-card strong {
+    font-size: 10px;
+  }
+
+  .finds-hero-floating-card>div>span {
+    font-size: 9px;
+  }
+
+  .cuisine-grid {
+    gap: 12px;
+  }
+
+  .cuisine-image {
+    height: 110px;
+  }
+
+  .cuisine-card-info {
+    min-height: 75px;
+    padding: 11px;
+  }
+
+  .cuisine-card-info strong {
+    font-size: 14px;
+  }
+
+  .cuisine-description {
+    font-size: 11px;
   }
 }

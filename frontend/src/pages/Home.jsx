@@ -1,6 +1,9 @@
 
 import { useState } from 'react'
 import '../App.css'
+import '../profile-styles.css'
+import FindsWellness from './FindsWellness'
+import FoodCustomizationModal from './FoodCustomizationModal'
 
 const categories = [
   'All Food', 'Breakfast', 'Lunch', 'Dinner',
@@ -8,175 +11,311 @@ const categories = [
 ]
 
 const cuisines = [
-  {
-    name: 'Indian',
-    description: 'Rich flavours and spices',
-    image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    name: 'Chinese',
-    description: 'Noodles, rice and more',
-    image: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    name: 'Nepali',
-    description: 'Momos and traditional food',
-    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    name: 'Italian',
-    description: 'Pizza and pasta',
-    image: 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    name: 'Japanese',
-    description: 'Sushi and ramen',
-    image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    name: 'Mexican',
-    description: 'Tacos and burritos',
-    image: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80',
-  },
+  { name: 'Indian', description: 'Rich flavours and spices', image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Chinese', description: 'Noodles, rice and more', image: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Nepali', description: 'Momos and traditional food', image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Italian', description: 'Pizza and pasta', image: 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Japanese', description: 'Sushi and ramen', image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Mexican', description: 'Tacos and burritos', image: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80' },
 ]
+
+const foodImages = {
+  Breakfast: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80',
+  Lunch: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80',
+  Dinner: 'https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=600&q=80',
+  Snacks: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+  Desserts: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+  Sweets: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+  Beverages: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80',
+}
+
+function makeDish(id, name, category, price, description) {
+  return { id, name, category, price, description, image: foodImages[category] }
+}
 
 const restaurants = [
   {
-    id: 1,
-    name: 'Spice Garden',
-    cuisine: 'Indian',
+    id: 1, name: 'Spice Garden', cuisine: 'Indian',
     description: 'Traditional Indian meals and curries',
-    rating: '4.5',
-    deliveryTime: '25–35 min',
+    rating: '4.5', deliveryTime: '25–35 min',
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80',
     menu: [
-      { id: 101, name: 'Veg Biryani', category: 'Lunch', price: 199, image: 'https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=600&q=80', description: 'Fragrant rice with vegetables and spices.' },
-      { id: 102, name: 'Masala Dosa', category: 'Breakfast', price: 99, image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80', description: 'Crispy dosa with spiced potato filling.' },
-      { id: 103, name: 'Paneer Butter Masala', category: 'Dinner', price: 239, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80', description: 'Paneer in creamy tomato gravy.' },
-      { id: 104, name: 'Gulab Jamun', category: 'Sweets', price: 79, image: 'https://images.unsplash.com/photo-1666190092159-3f3e7a1c4a4b?auto=format&fit=crop&w=600&q=80', description: 'Classic Indian sweets in sugar syrup.' },
+      makeDish(101, 'Masala Dosa', 'Breakfast', 99, 'Crispy dosa with spiced potato filling.'),
+      makeDish(107, 'Idli Sambar', 'Breakfast', 69, 'Soft idlis served with sambar.'),
+      makeDish(108, 'Poha', 'Breakfast', 59, 'Flattened rice with spices and herbs.'),
+      makeDish(109, 'Aloo Paratha', 'Breakfast', 89, 'Stuffed flatbread served with curd.'),
+      makeDish(110, 'Upma', 'Breakfast', 59, 'Warm semolina breakfast with vegetables.'),
+      makeDish(102, 'Veg Biryani', 'Lunch', 199, 'Fragrant rice cooked with vegetables and spices.'),
+      makeDish(111, 'Paneer Biryani', 'Lunch', 229, 'Spiced rice with paneer and aromatic herbs.'),
+      makeDish(112, 'Chole Bhature', 'Lunch', 149, 'Spicy chickpeas with fried bread.'),
+      makeDish(113, 'Dal Rice', 'Lunch', 129, 'Comforting lentils served with rice.'),
+      makeDish(103, 'Paneer Butter Masala', 'Dinner', 239, 'Paneer in creamy tomato gravy.'),
+      makeDish(114, 'Palak Paneer', 'Dinner', 219, 'Paneer cooked in spinach gravy.'),
+      makeDish(115, 'Veg Pulao', 'Dinner', 159, 'Flavourful rice with mixed vegetables.'),
+      makeDish(104, 'Samosa', 'Snacks', 49, 'Crispy pastry filled with spiced potatoes.'),
+      makeDish(116, 'Paneer Tikka', 'Snacks', 159, 'Grilled paneer with aromatic spices.'),
+      makeDish(117, 'Aloo Tikki', 'Snacks', 69, 'Crispy potato patties with chutney.'),
+      makeDish(105, 'Gulab Jamun', 'Sweets', 79, 'Classic Indian sweet in sugar syrup.'),
+      makeDish(118, 'Rasgulla', 'Sweets', 69, 'Soft cottage-cheese balls in light syrup.'),
+      makeDish(119, 'Jalebi', 'Sweets', 59, 'Crispy, syrup-soaked traditional sweet.'),
+      makeDish(120, 'Kaju Katli', 'Sweets', 129, 'Rich cashew-based Indian sweet.'),
+      makeDish(121, 'Kheer', 'Desserts', 89, 'Creamy rice pudding with cardamom.'),
+      makeDish(106, 'Masala Chai', 'Beverages', 40, 'Tea brewed with aromatic spices.'),
+      makeDish(122, 'Cold Coffee', 'Beverages', 99, 'Chilled coffee with a creamy finish.'),
     ],
   },
   {
-    id: 2,
-    name: 'Pizza House',
-    cuisine: 'Italian',
+    id: 2, name: 'Pizza House', cuisine: 'Italian',
     description: 'Freshly baked pizza and pasta',
-    rating: '4.4',
-    deliveryTime: '20–30 min',
+    rating: '4.4', deliveryTime: '20–30 min',
     image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=700&q=80',
     menu: [
-      { id: 201, name: 'Margherita Pizza', category: 'Dinner', price: 249, image: 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=600&q=80', description: 'Tomato sauce, mozzarella and herbs.' },
-      { id: 202, name: 'Creamy Pasta', category: 'Dinner', price: 219, image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80', description: 'Pasta tossed in a creamy sauce.' },
-      { id: 203, name: 'Garlic Bread', category: 'Snacks', price: 119, image: 'https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?auto=format&fit=crop&w=600&q=80', description: 'Toasted bread with garlic and herbs.' },
-      { id: 204, name: 'Chocolate Cake', category: 'Desserts', price: 129, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80', description: 'Rich chocolate cake.' },
+      makeDish(201, 'Pancakes', 'Breakfast', 149, 'Fluffy pancakes for a delicious morning.'),
+      makeDish(207, 'Cheese Omelette', 'Breakfast', 129, 'A fluffy omelette with melted cheese.'),
+      makeDish(208, 'Veg Toast', 'Breakfast', 89, 'Toasted bread topped with fresh vegetables.'),
+      makeDish(202, 'Creamy Pasta', 'Lunch', 219, 'Pasta tossed in a creamy sauce.'),
+      makeDish(209, 'Arrabbiata Pasta', 'Lunch', 199, 'Pasta with a spicy tomato sauce.'),
+      makeDish(210, 'Pesto Pasta', 'Lunch', 229, 'Pasta tossed in basil pesto.'),
+      makeDish(203, 'Margherita Pizza', 'Dinner', 249, 'Tomato sauce, mozzarella and herbs.'),
+      makeDish(211, 'Farmhouse Pizza', 'Dinner', 299, 'Pizza topped with vegetables and cheese.'),
+      makeDish(212, 'Four Cheese Pizza', 'Dinner', 329, 'A rich pizza topped with four cheeses.'),
+      makeDish(204, 'Garlic Bread', 'Snacks', 119, 'Toasted bread with garlic and herbs.'),
+      makeDish(213, 'Cheese Sticks', 'Snacks', 139, 'Golden baked sticks filled with cheese.'),
+      makeDish(205, 'Chocolate Cake', 'Desserts', 129, 'Rich and moist chocolate cake.'),
+      makeDish(214, 'Tiramisu', 'Desserts', 159, 'Coffee-flavoured Italian dessert.'),
+      makeDish(215, 'Cheesecake', 'Desserts', 169, 'Creamy cheesecake with a biscuit base.'),
+      makeDish(216, 'Chocolate Brownie', 'Desserts', 119, 'A rich chocolate brownie.'),
+      makeDish(206, 'Lemonade', 'Beverages', 59, 'Refreshing citrus drink.'),
+      makeDish(217, 'Iced Tea', 'Beverages', 69, 'Chilled tea with a refreshing taste.'),
     ],
   },
   {
-    id: 3,
-    name: 'Wok Express',
-    cuisine: 'Chinese',
+    id: 3, name: 'Wok Express', cuisine: 'Chinese',
     description: 'Noodles, rice and Asian favourites',
-    rating: '4.3',
-    deliveryTime: '25–40 min',
+    rating: '4.3', deliveryTime: '25–40 min',
     image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=700&q=80',
     menu: [
-      { id: 301, name: 'Hakka Noodles', category: 'Lunch', price: 179, image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80', description: 'Stir-fried noodles and vegetables.' },
-      { id: 302, name: 'Veg Fried Rice', category: 'Lunch', price: 169, image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80', description: 'Fried rice with vegetables and seasoning.' },
-      { id: 303, name: 'Spring Rolls', category: 'Snacks', price: 129, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80', description: 'Crispy rolls with vegetable filling.' },
-      { id: 304, name: 'Chilli Paneer', category: 'Dinner', price: 199, image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=600&q=80', description: 'Paneer tossed in a spicy sauce.' },
+      makeDish(301, 'Veg Sandwich', 'Breakfast', 89, 'Fresh sandwich with vegetables.'),
+      makeDish(302, 'Hakka Noodles', 'Lunch', 179, 'Stir-fried noodles and vegetables.'),
+      makeDish(306, 'Schezwan Noodles', 'Lunch', 189, 'Spicy noodles tossed in Schezwan sauce.'),
+      makeDish(307, 'Chilli Paneer', 'Lunch', 199, 'Paneer tossed with peppers and spicy sauce.'),
+      makeDish(303, 'Veg Fried Rice', 'Dinner', 169, 'Fried rice with vegetables and seasoning.'),
+      makeDish(308, 'Manchurian Rice', 'Dinner', 199, 'Fried rice served with vegetable Manchurian.'),
+      makeDish(309, 'Chilli Garlic Noodles', 'Dinner', 189, 'Noodles with garlic and a spicy kick.'),
+      makeDish(304, 'Spring Rolls', 'Snacks', 129, 'Crispy rolls with vegetable filling.'),
+      makeDish(310, 'Crispy Corn', 'Snacks', 119, 'Crunchy corn tossed with seasoning.'),
+      makeDish(311, 'Chilli Potato', 'Snacks', 139, 'Crispy potatoes tossed in tangy sauce.'),
+      makeDish(305, 'Ice Cream', 'Desserts', 99, 'A cool and creamy dessert.'),
+      makeDish(312, 'Mango Ice Cream', 'Desserts', 109, 'Sweet and fruity mango ice cream.'),
+      makeDish(313, 'Chocolate Sundae', 'Desserts', 139, 'Ice cream topped with chocolate sauce.'),
+      makeDish(314, 'Lemon Soda', 'Beverages', 49, 'A fizzy lemon drink.'),
     ],
   },
   {
-    id: 4,
-    name: 'Momo Corner',
-    cuisine: 'Nepali',
+    id: 4, name: 'Momo Corner', cuisine: 'Nepali',
     description: 'Momos and Himalayan favourites',
-    rating: '4.6',
-    deliveryTime: '20–30 min',
+    rating: '4.6', deliveryTime: '20–30 min',
     image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=700&q=80',
     menu: [
-      { id: 401, name: 'Veg Momos', category: 'Snacks', price: 149, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80', description: 'Steamed vegetable dumplings.' },
-      { id: 402, name: 'Fried Momos', category: 'Snacks', price: 169, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80', description: 'Crispy dumplings served with dipping sauce.' },
-      { id: 403, name: 'Noodle Soup', category: 'Dinner', price: 189, image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80', description: 'Warm noodle soup with vegetables.' },
-      { id: 404, name: 'Masala Chai', category: 'Beverages', price: 40, image: 'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?auto=format&fit=crop&w=600&q=80', description: 'Tea brewed with aromatic spices.' },
+      makeDish(401, 'Veg Momos', 'Snacks', 149, 'Steamed vegetable dumplings.'),
+      makeDish(402, 'Fried Momos', 'Lunch', 169, 'Crispy dumplings with dipping sauce.'),
+      makeDish(403, 'Noodle Soup', 'Dinner', 189, 'Warm noodle soup with vegetables.'),
+      makeDish(404, 'Sweet Yogurt', 'Desserts', 89, 'A smooth and creamy sweet treat.'),
+      makeDish(405, 'Chocolate Momo', 'Sweets', 119, 'A sweet dumpling-inspired treat.'),
     ],
   },
   {
-    id: 5,
-    name: 'Tokyo Bowl',
-    cuisine: 'Japanese',
+    id: 5, name: 'Tokyo Bowl', cuisine: 'Japanese',
     description: 'Ramen and Japanese-inspired dishes',
-    rating: '4.5',
-    deliveryTime: '30–40 min',
+    rating: '4.5', deliveryTime: '30–40 min',
     image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=700&q=80',
     menu: [
-      { id: 501, name: 'Japanese Ramen', category: 'Dinner', price: 299, image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80', description: 'Noodles served in savoury broth.' },
-      { id: 502, name: 'Vegetable Sushi', category: 'Lunch', price: 249, image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80', description: 'Japanese-style rolls with vegetables.' },
-      { id: 503, name: 'Miso Soup', category: 'Snacks', price: 129, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80', description: 'A comforting savoury soup.' },
-      { id: 504, name: 'Ice Cream', category: 'Desserts', price: 119, image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=600&q=80', description: 'A creamy chilled dessert.' },
+      makeDish(501, 'Fruit Bowl', 'Breakfast', 129, 'Fresh seasonal fruit.'),
+      makeDish(502, 'Vegetable Sushi', 'Lunch', 249, 'Japanese-style rolls with vegetables.'),
+      makeDish(503, 'Japanese Ramen', 'Dinner', 299, 'Noodles served in savoury broth.'),
+      makeDish(504, 'Miso Soup', 'Snacks', 129, 'A comforting savoury soup.'),
+      makeDish(505, 'Mochi', 'Sweets', 119, 'Soft, sweet Japanese rice cakes.'),
+      makeDish(506, 'Matcha Latte', 'Beverages', 149, 'Creamy green tea latte.'),
     ],
   },
   {
-    id: 6,
-    name: 'Taco Fiesta',
-    cuisine: 'Mexican',
+    id: 6, name: 'Taco Fiesta', cuisine: 'Mexican',
     description: 'Tacos, burritos and bold flavours',
-    rating: '4.2',
-    deliveryTime: '25–35 min',
+    rating: '4.2', deliveryTime: '25–35 min',
     image: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=700&q=80',
     menu: [
-      { id: 601, name: 'Veg Tacos', category: 'Snacks', price: 189, image: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=600&q=80', description: 'Tortillas with vegetables and fresh toppings.' },
-      { id: 602, name: 'Veg Burrito Bowl', category: 'Lunch', price: 229, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80', description: 'Rice, beans and fresh vegetables.' },
-      { id: 603, name: 'Quesadilla', category: 'Dinner', price: 199, image: 'https://images.unsplash.com/photo-1618040996337-56904b7850b9?auto=format&fit=crop&w=600&q=80', description: 'Grilled tortilla with melted cheese.' },
-      { id: 604, name: 'Lemonade', category: 'Beverages', price: 59, image: 'https://images.unsplash.com/photo-1513558161293-cdaf765edfd7?auto=format&fit=crop&w=600&q=80', description: 'Refreshing citrus drink.' },
+      makeDish(601, 'Veg Tacos', 'Snacks', 189, 'Tortillas with vegetables and fresh toppings.'),
+      makeDish(602, 'Veg Burrito Bowl', 'Lunch', 229, 'Rice, beans and fresh vegetables.'),
+      makeDish(603, 'Quesadilla', 'Dinner', 199, 'Grilled tortilla with melted cheese.'),
+      makeDish(604, 'Brownie', 'Desserts', 109, 'A rich chocolate brownie.'),
+      makeDish(605, 'Nachos', 'Snacks', 129, 'Crunchy nachos served with toppings.'),
+      makeDish(606, 'Churros', 'Sweets', 119, 'Sweet fried pastry dusted with sugar.'),
+      makeDish(607, 'Fruit Smoothie', 'Beverages', 99, 'A refreshing blended fruit drink.'),
     ],
   },
 ]
+
+const foodPreferenceOptions = [
+  'Vegetarian', 'Non-vegetarian', 'Vegan', 'Indian',
+  'Chinese', 'Italian', 'Spicy food', 'Healthy food',
+]
+
+const vouchers = {
+  FINDS10: {
+    code: 'FINDS10', type: 'percentage', value: 10,
+    minimum: 199, maxDiscount: 100,
+    description: '10% off orders of ₹199 or more',
+  },
+  SWEET50: {
+    code: 'SWEET50', type: 'fixed', value: 50,
+    minimum: 299,
+    description: '₹50 off orders of ₹299 or more',
+  },
+}
 
 function Home() {
   const [activeCategory, setActiveCategory] = useState('All Food')
   const [activeCuisine, setActiveCuisine] = useState('All')
   const [search, setSearch] = useState('')
   const [restaurantSearch, setRestaurantSearch] = useState('')
+  const [activeView, setActiveView] = useState('food')
   const [selectedRestaurant, setSelectedRestaurant] = useState(null)
+  const [selectedDish, setSelectedDish] = useState(null)
   const [cart, setCart] = useState([])
+  const [voucherCode, setVoucherCode] = useState('')
+  const [appliedVoucher, setAppliedVoucher] = useState(null)
+  const [voucherMessage, setVoucherMessage] = useState('')
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileBeforeEdit, setProfileBeforeEdit] = useState(null)
+
+  const [profile, setProfile] = useState(() => {
+    try {
+      const savedProfile = localStorage.getItem('findsProfile')
+      return savedProfile
+        ? JSON.parse(savedProfile)
+        : {
+          name: localStorage.getItem('name') || '',
+          email: localStorage.getItem('email') || '',
+          phone: '',
+          address: '',
+          city: '',
+          pincode: '',
+          preferences: ['Vegetarian'],
+        }
+    } catch {
+      return {
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        pincode: '',
+        preferences: ['Vegetarian'],
+      }
+    }
+  })
+
+  function openProfile() {
+    setActiveView('profile')
+    setSelectedRestaurant(null)
+    setIsEditingProfile(false)
+  }
+
+  function openWellness() {
+    setActiveView('wellness')
+    setSelectedRestaurant(null)
+  }
+
+  function updateProfileField(field, value) {
+    setProfile((current) => ({ ...current, [field]: value }))
+  }
+
+  function toggleFoodPreference(preference) {
+    setProfile((current) => {
+      const preferences = current.preferences || []
+      return {
+        ...current,
+        preferences: preferences.includes(preference)
+          ? preferences.filter((item) => item !== preference)
+          : [...preferences, preference],
+      }
+    })
+  }
+
+  function saveProfile() {
+    try {
+      localStorage.setItem('findsProfile', JSON.stringify(profile))
+      setIsEditingProfile(false)
+      setProfileBeforeEdit(null)
+      alert('Your profile has been saved on this device.')
+    } catch {
+      alert('Could not save your profile. Please try again.')
+    }
+  }
+
+  function cancelProfileEdit() {
+    if (profileBeforeEdit) setProfile(profileBeforeEdit)
+    setProfileBeforeEdit(null)
+    setIsEditingProfile(false)
+  }
 
   function selectCategory(category) {
     setActiveCategory(category)
     setActiveCuisine('All')
+    setActiveView('food')
     setSelectedRestaurant(null)
+    setSelectedDish(null)
+    setSearch('')
   }
 
   function selectCuisine(cuisine) {
     setActiveCuisine(activeCuisine === cuisine ? 'All' : cuisine)
     setActiveCategory('All Food')
+    setActiveView('food')
     setSelectedRestaurant(null)
+    setSelectedDish(null)
+    setSearch('')
   }
 
-  function addToCart(dish, restaurantName) {
-    const cartId = `${restaurantName}-${dish.id}`
+  function openRestaurants() {
+    setActiveView('restaurants')
+    setSelectedRestaurant(null)
+    setSelectedDish(null)
+    setRestaurantSearch('')
+  }
 
-    setCart((currentCart) => {
-      const existingItem = currentCart.find((item) => item.cartId === cartId)
+  function addToCart(dish, restaurantName, quantity = 1) {
+    const customizationKey = dish.customizationKey || ''
+    const cartId = customizationKey
+      ? `${restaurantName}-${dish.id}-${customizationKey}`
+      : `${restaurantName}-${dish.id}`
 
-      if (existingItem) {
-        return currentCart.map((item) =>
+    setCart((current) => {
+      const existing = current.find((item) => item.cartId === cartId)
+
+      if (existing) {
+        return current.map((item) =>
           item.cartId === cartId
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantity }
             : item
         )
       }
 
       return [
-        ...currentCart,
-        { ...dish, cartId, restaurantName, quantity: 1 },
+        ...current,
+        {
+          ...dish,
+          cartId,
+          restaurantName,
+          quantity,
+        },
       ]
     })
   }
 
   function changeQuantity(cartId, amount) {
-    setCart((currentCart) =>
-      currentCart
+    setCart((current) =>
+      current
         .map((item) =>
           item.cartId === cartId
             ? { ...item, quantity: item.quantity + amount }
@@ -184,6 +323,13 @@ function Home() {
         )
         .filter((item) => item.quantity > 0)
     )
+  }
+
+  function removeCartItem(cartId) {
+    setCart((current) => current.filter((item) => item.cartId !== cartId))
+    setAppliedVoucher(null)
+    setVoucherCode('')
+    setVoucherMessage('')
   }
 
   const allDishes = restaurants.flatMap((restaurant) =>
@@ -195,12 +341,13 @@ function Home() {
   )
 
   const filteredRestaurants = restaurants.filter((restaurant) =>
-    restaurant.name.toLowerCase().includes(restaurantSearch.trim().toLowerCase())
+    `${restaurant.name} ${restaurant.cuisine} ${restaurant.description}`
+      .toLowerCase()
+      .includes(restaurantSearch.trim().toLowerCase())
   )
 
   const filteredDishes = allDishes.filter((dish) => {
     const term = search.trim().toLowerCase()
-
     const matchesSearch =
       dish.name.toLowerCase().includes(term) ||
       dish.cuisine.toLowerCase().includes(term) ||
@@ -208,36 +355,183 @@ function Home() {
       dish.description.toLowerCase().includes(term) ||
       dish.restaurantName.toLowerCase().includes(term)
 
-    const matchesCategory =
-      activeCategory === 'All Food' || dish.category === activeCategory
-
-    const matchesCuisine =
-      activeCuisine === 'All' || dish.cuisine === activeCuisine
-
-    return matchesSearch && matchesCategory && matchesCuisine
+    return (
+      matchesSearch &&
+      (activeCategory === 'All Food' || dish.category === activeCategory) &&
+      (activeCuisine === 'All' || dish.cuisine === activeCuisine)
+    )
   })
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0)
-  const cartTotal = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  )
+  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0)
+
+  const validVoucher =
+    appliedVoucher && cartTotal >= appliedVoucher.minimum && cartTotal > 0
+      ? appliedVoucher
+      : null
+
+  const discount = validVoucher
+    ? Math.min(
+      validVoucher.type === 'percentage'
+        ? Math.round(cartTotal * validVoucher.value / 100)
+        : validVoucher.value,
+      validVoucher.maxDiscount ?? Infinity,
+      cartTotal
+    )
+    : 0
+
+  const finalTotal = Math.max(0, cartTotal - discount)
 
   function showCart() {
+    setActiveView('cart')
+    setSelectedRestaurant(null)
+    setSelectedDish(null)
+  }
+
+  function applyVoucher() {
+    const code = voucherCode.trim().toUpperCase()
+    const voucher = vouchers[code]
+
     if (cart.length === 0) {
-      alert('Your cart is empty.')
+      setAppliedVoucher(null)
+      setVoucherMessage('Add food to your cart before applying a voucher.')
       return
     }
 
-    const details = cart
-      .map(
-        (item) =>
-          `${item.name} (${item.restaurantName}) × ${item.quantity} — ₹${item.price * item.quantity}`
-      )
-      .join('\n')
+    if (!voucher) {
+      setAppliedVoucher(null)
+      setVoucherMessage('Invalid voucher code. Please try again.')
+      return
+    }
 
-    alert(`${details}\n\nTotal: ₹${cartTotal}\n\nOrdering and checkout will be connected later.`)
+    if (cartTotal < voucher.minimum) {
+      setAppliedVoucher(null)
+      setVoucherMessage(`Add items worth ₹${voucher.minimum - cartTotal} more to use ${code}.`)
+      return
+    }
+
+    setAppliedVoucher(voucher)
+    setVoucherMessage(`${code} applied successfully!`)
   }
+
+  function removeVoucher() {
+    setAppliedVoucher(null)
+    setVoucherCode('')
+    setVoucherMessage('Voucher removed.')
+  }
+
+  function renderDishCard(dish) {
+    const cartId = `${dish.restaurantName}-${dish.id}`
+    const cartItem = cart.find((item) => item.cartId === cartId)
+
+    return (
+      <article className="dish-card" key={cartId}>
+        <div
+          className="dish-image"
+          role="button"
+          tabIndex={0}
+          style={{ cursor: 'pointer' }}
+          onClick={() => setSelectedDish(dish)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              setSelectedDish(dish)
+            }
+          }}
+        >
+          <img src={dish.image} alt={dish.name} />
+        </div>
+
+        <div className="dish-details">
+          <span className="dish-cuisine">
+            {dish.cuisine} · {dish.category}
+          </span>
+
+          <h3
+            onClick={() => setSelectedDish(dish)}
+            style={{ cursor: 'pointer' }}
+          >
+            {dish.name}
+          </h3>
+
+          <p>{dish.description}</p>
+          <p className="dish-restaurant-name">{dish.restaurantName}</p>
+
+          <button
+            type="button"
+            className="category-button"
+            onClick={() => setSelectedDish(dish)}
+          >
+            Customize / View details
+          </button>
+
+          <div className="dish-footer">
+            <strong>₹{dish.price}</strong>
+
+            {cartItem ? (
+              <div className="quantity-controls">
+                <button
+                  onClick={() => changeQuantity(cartId, -1)}
+                  aria-label={`Decrease ${dish.name} quantity`}
+                >
+                  −
+                </button>
+                <span>{cartItem.quantity}</span>
+                <button
+                  onClick={() => addToCart(dish, dish.restaurantName)}
+                  aria-label={`Increase ${dish.name} quantity`}
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => addToCart(dish, dish.restaurantName)}>
+                + Add
+              </button>
+            )}
+          </div>
+        </div>
+      </article>
+    )
+  }
+
+  const isMainFoodPage =
+    activeView === 'food' &&
+    activeCategory === 'All Food' &&
+    activeCuisine === 'All' &&
+    !search.trim()
+
+  const pageTitle =
+    activeView === 'cart'
+      ? 'Your Cart'
+      : activeView === 'profile'
+        ? 'My Profile'
+        : activeView === 'wellness'
+          ? 'Finds Wellness'
+          : activeView === 'restaurants'
+            ? selectedRestaurant
+              ? selectedRestaurant.name
+              : 'Explore restaurants'
+            : activeCategory !== 'All Food'
+              ? `${activeCategory} Options`
+              : activeCuisine !== 'All'
+                ? `${activeCuisine} Dishes`
+                : 'Discover something delicious.'
+
+  const pageDescription =
+    activeView === 'cart'
+      ? 'Review your items, apply a voucher and check your total.'
+      : activeView === 'profile'
+        ? 'Manage your personal details, delivery address and food preferences.'
+        : activeView === 'wellness'
+          ? 'Discover healthy meals and explore food for your lifestyle.'
+          : activeView === 'restaurants'
+            ? selectedRestaurant
+              ? selectedRestaurant.description
+              : 'Find restaurants, cafes and your next favourite meal.'
+            : activeCategory !== 'All Food'
+              ? `Explore delicious ${activeCategory.toLowerCase()} options.`
+              : 'Find the food you are craving today.'
 
   return (
     <div className="home-page">
@@ -246,15 +540,39 @@ function Home() {
         <p className="sidebar-label">DISCOVER</p>
 
         <nav className="category-list">
+          <button
+            className={`category-button ${activeView === 'profile' ? 'active' : ''}`}
+            onClick={openProfile}
+          >
+            My Profile
+          </button>
+
           {categories.map((category) => (
             <button
               key={category}
-              className={`category-button ${activeCategory === category && !selectedRestaurant ? 'active' : ''}`}
+              className={`category-button ${activeView === 'food' && !selectedRestaurant && activeCategory === category
+                  ? 'active'
+                  : ''
+                }`}
               onClick={() => selectCategory(category)}
             >
               {category}
             </button>
           ))}
+
+          <button
+            className={`category-button ${activeView === 'restaurants' ? 'active' : ''}`}
+            onClick={openRestaurants}
+          >
+            Explore restaurants
+          </button>
+
+          <button
+            className={`category-button ${activeView === 'wellness' ? 'active' : ''}`}
+            onClick={openWellness}
+          >
+            Finds Wellness
+          </button>
         </nav>
 
         <div className="sidebar-bottom">
@@ -266,8 +584,8 @@ function Home() {
         <header className="home-header">
           <div>
             <p className="eyebrow">YOUR FOOD DISCOVERY SPACE</p>
-            <h1>Discover something delicious.</h1>
-            <p className="header-description">Find the food you're craving today.</p>
+            <h1>{pageTitle}</h1>
+            <p className="header-description">{pageDescription}</p>
           </div>
 
           <button className="cart-button" onClick={showCart}>
@@ -275,241 +593,458 @@ function Home() {
           </button>
         </header>
 
-        <div className="search-box">
-          <span>⌕</span>
-          <input
-            type="text"
-            placeholder="Search dishes, cuisines or restaurants..."
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value)
-              setSelectedRestaurant(null)
-            }}
+        {selectedDish && (
+          <FoodCustomizationModal
+            dish={selectedDish}
+            onClose={() => setSelectedDish(null)}
+            onAddToCart={(dish, quantity) =>
+              addToCart(dish, selectedDish.restaurantName, quantity)
+            }
           />
-        </div>
+        )}
 
-        <section className="content-section" id="explore-restaurants">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">FIND YOUR NEXT FAVOURITE</p>
-              <h2>Explore restaurants</h2>
-            </div>
-            {selectedRestaurant && (
-              <button
-                className="category-button"
-                onClick={() => setSelectedRestaurant(null)}
-              >
-                ← All restaurants
-              </button>
-            )}
-          </div>
-
-          {!selectedRestaurant ? (
-            <>
-              <div className="search-box restaurant-search">
-                <span>⌕</span>
-                <input
-                  type="text"
-                  placeholder="Search restaurants by name..."
-                  value={restaurantSearch}
-                  onChange={(event) => setRestaurantSearch(event.target.value)}
-                />
+        {activeView === 'wellness' ? (
+          <FindsWellness
+            cart={cart}
+            onAddToCart={addToCart}
+            onChangeQuantity={changeQuantity}
+          />
+        ) : activeView === 'profile' ? (
+          <section className="content-section profile-page">
+            <div className="profile-welcome-card">
+              <div className="profile-avatar">
+                {profile.name.trim() ? profile.name.trim().charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div className="profile-welcome-copy">
+                <p className="eyebrow">YOUR FINDS ACCOUNT</p>
+                <h2>{profile.name.trim() || 'Welcome to Finds'}</h2>
+                <p>Keep your details up to date for a smoother food delivery experience.</p>
               </div>
 
-              <div className="restaurant-grid">
-                {filteredRestaurants.map((restaurant) => (
-                  <button
-                    key={restaurant.id}
-                    className="restaurant-card"
-                    onClick={() => {
-                      setSelectedRestaurant(restaurant)
-                      setSearch('')
-                    }}
-                  >
-                    <img
-                      src={restaurant.image}
-                      alt={restaurant.name}
-                      className="restaurant-image"
-                    />
-                    <div className="restaurant-info">
-                      <h3>{restaurant.name}</h3>
-                      <p>{restaurant.description}</p>
-                      <div className="restaurant-meta">
-                        <span>⭐ {restaurant.rating}</span>
-                        <span>{restaurant.cuisine}</span>
-                        <span>{restaurant.deliveryTime}</span>
-                      </div>
-                      <strong>View menu →</strong>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {filteredRestaurants.length === 0 && (
-                <p className="empty-results">
-                  No restaurants found. Try another name.
-                </p>
+              {!isEditingProfile && (
+                <button
+                  className="profile-edit-button"
+                  onClick={() => {
+                    setProfileBeforeEdit({ ...profile })
+                    setIsEditingProfile(true)
+                  }}
+                >
+                  ✎ Edit profile
+                </button>
               )}
-            </>
-          ) : (
-            <>
-              <div className="restaurant-menu-heading">
-                <img
-                  src={selectedRestaurant.image}
-                  alt={selectedRestaurant.name}
-                />
-                <div>
-                  <p className="eyebrow">{selectedRestaurant.cuisine} CUISINE</p>
-                  <h2>{selectedRestaurant.name}</h2>
-                  <p>{selectedRestaurant.description}</p>
-                  <p>⭐ {selectedRestaurant.rating} · {selectedRestaurant.deliveryTime}</p>
-                </div>
+            </div>
+
+            <div className="profile-layout">
+              <div className="profile-main-column">
+                <section className="profile-card">
+                  <div className="profile-card-heading">
+                    <div><span className="profile-icon">♙</span><h2>Personal Information</h2></div>
+                    <span className="profile-card-note">{isEditingProfile ? 'Editing details' : 'Your account details'}</span>
+                  </div>
+
+                  <div className="profile-fields-grid">
+                    <label className="profile-field">
+                      <span>Full name</span>
+                      <input value={profile.name} onChange={(event) => updateProfileField('name', event.target.value)} placeholder="Enter your full name" readOnly={!isEditingProfile} />
+                    </label>
+
+                    <label className="profile-field">
+                      <span>Email address</span>
+                      <input type="email" value={profile.email} onChange={(event) => updateProfileField('email', event.target.value)} placeholder="Enter your email address" readOnly={!isEditingProfile} />
+                    </label>
+
+                    <label className="profile-field">
+                      <span>Phone number</span>
+                      <input type="tel" value={profile.phone} onChange={(event) => updateProfileField('phone', event.target.value)} placeholder="Enter your phone number" readOnly={!isEditingProfile} />
+                    </label>
+                  </div>
+                </section>
+
+                <section className="profile-card">
+                  <div className="profile-card-heading">
+                    <div><span className="profile-icon">⌖</span><h2>Delivery Address</h2></div>
+                    <span className="profile-card-note">Where should we deliver?</span>
+                  </div>
+
+                  <div className="profile-fields-grid">
+                    <label className="profile-field profile-field-wide">
+                      <span>House number, street and area</span>
+                      <input value={profile.address} onChange={(event) => updateProfileField('address', event.target.value)} placeholder="Enter your complete address" readOnly={!isEditingProfile} />
+                    </label>
+
+                    <label className="profile-field">
+                      <span>City</span>
+                      <input value={profile.city} onChange={(event) => updateProfileField('city', event.target.value)} placeholder="Enter your city" readOnly={!isEditingProfile} />
+                    </label>
+
+                    <label className="profile-field">
+                      <span>PIN code</span>
+                      <input inputMode="numeric" maxLength={6} value={profile.pincode} onChange={(event) => updateProfileField('pincode', event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit PIN code" readOnly={!isEditingProfile} />
+                    </label>
+                  </div>
+                </section>
+
+                <section className="profile-card">
+                  <div className="profile-card-heading">
+                    <div><span className="profile-icon">♡</span><h2>Food Preferences</h2></div>
+                    <span className="profile-card-note">Personalise your discovery</span>
+                  </div>
+
+                  <p className="profile-section-description">Choose the food types and cuisines you usually enjoy.</p>
+
+                  <div className="food-preference-list">
+                    {foodPreferenceOptions.map((preference) => (
+                      <button
+                        type="button"
+                        key={preference}
+                        disabled={!isEditingProfile}
+                        className={`food-preference-chip ${(profile.preferences || []).includes(preference) ? 'selected' : ''}`}
+                        onClick={() => toggleFoodPreference(preference)}
+                      >
+                        {(profile.preferences || []).includes(preference) ? '✓ ' : '+ '}{preference}
+                      </button>
+                    ))}
+                  </div>
+
+                  {!isEditingProfile && <p className="profile-help-text">Select Edit profile to change your preferences.</p>}
+                </section>
+
+                {isEditingProfile && (
+                  <div className="profile-save-actions">
+                    <button className="profile-cancel-button" onClick={cancelProfileEdit}>Cancel</button>
+                    <button className="profile-save-button" onClick={saveProfile}>Save changes</button>
+                  </div>
+                )}
               </div>
 
-              <h3>Menu</h3>
+              <aside className="profile-side-column">
+                <section className="finds-wallet-card">
+                  <div className="wallet-title-row">
+                    <span className="wallet-symbol">₹</span>
+                    <div><p>YOUR REWARDS</p><h2>Finds Wallet</h2></div>
+                  </div>
 
-              <div className="dish-grid">
-                {selectedRestaurant.menu.map((dish) => {
-                  const cartId = `${selectedRestaurant.name}-${dish.id}`
-                  const cartItem = cart.find((item) => item.cartId === cartId)
+                  <p className="wallet-balance-label">Available balance</p>
+                  <p className="wallet-balance">₹0.00</p>
+                  <p className="wallet-description">Your wallet balance and eligible rewards will appear here.</p>
+                  <div className="wallet-divider" />
 
-                  return (
-                    <article className="dish-card" key={dish.id}>
-                      <div className="dish-image">
-                        <img src={dish.image} alt={dish.name} />
-                      </div>
-                      <div className="dish-details">
-                        <span className="dish-cuisine">{dish.category}</span>
-                        <h3>{dish.name}</h3>
-                        <p>{dish.description}</p>
-                        <div className="dish-footer">
-                          <strong>₹{dish.price}</strong>
-                          {cartItem ? (
-                            <div className="quantity-controls">
-                              <button onClick={() => changeQuantity(cartId, -1)}>−</button>
-                              <span>{cartItem.quantity}</span>
-                              <button onClick={() => addToCart(dish, selectedRestaurant.name)}>+</button>
-                            </div>
-                          ) : (
-                            <button onClick={() => addToCart(dish, selectedRestaurant.name)}>
-                              + Add
-                            </button>
-                          )}
+                  <div className="wallet-voucher-row">
+                    <div className="voucher-icon">%</div>
+                    <div className="wallet-voucher-copy"><h3>Vouchers & offers</h3><p>Find discounts for your next order</p></div>
+                  </div>
+
+                  <button className="wallet-voucher-button" onClick={() => alert('Your vouchers and offers will be available here once offers are connected to Finds.')}>
+                    View vouchers <span>→</span>
+                  </button>
+
+                  <p className="wallet-small-note">Wallet payments and vouchers will be connected later.</p>
+                </section>
+
+                <section className="profile-card support-card">
+                  <div className="profile-card-heading"><div><span className="profile-icon">?</span><h2>Help & Support</h2></div></div>
+
+                  <button className="support-link" onClick={() => alert('Contact Us will be connected to Finds customer support soon.')}>
+                    <span className="support-link-icon">✉</span>
+                    <span className="support-link-copy"><strong>Contact Us</strong><small>Questions or feedback? We can help.</small></span>
+                    <span className="support-arrow">→</span>
+                  </button>
+
+                  <button className="support-link" onClick={() => alert('The customer helpline number will be added when Finds support is set up.')}>
+                    <span className="support-link-icon">☎</span>
+                    <span className="support-link-copy"><strong>Customer Helpline</strong><small>Get help with your account or orders.</small></span>
+                    <span className="support-arrow">→</span>
+                  </button>
+
+                  <p className="support-note">Support contact details will be added before launch.</p>
+                </section>
+              </aside>
+            </div>
+          </section>
+        ) : activeView === 'cart' ? (
+          <section className="content-section cart-page">
+            {cart.length === 0 ? (
+              <div className="cart-empty">
+                <div className="cart-empty-icon">🛒</div>
+                <h2>Your cart is empty</h2>
+                <p>Discover something delicious and add it to your cart.</p>
+                <button className="cart-continue-button" onClick={() => selectCategory('All Food')}>Explore food</button>
+              </div>
+            ) : (
+              <div className="cart-layout">
+                <div className="cart-items-panel">
+                  <div className="section-heading">
+                    <h2>Your selected items</h2>
+                    <span className="dish-count">{cartCount} {cartCount === 1 ? 'item' : 'items'}</span>
+                  </div>
+
+                  {cart.map((item) => (
+                    <article className="cart-item" key={item.cartId}>
+                      <img src={item.image} alt={item.name} />
+
+                      <div className="cart-item-info">
+                        <h3>{item.name}</h3>
+                        <p>{item.restaurantName}</p>
+                        <strong>₹{item.price}</strong>
+
+                        {item.customization && (
+                          <p className="cart-item-customization">
+                            <strong>Customization:</strong> {item.customization}
+                          </p>
+                        )}
+
+                        <div className="quantity-controls">
+                          <button onClick={() => changeQuantity(item.cartId, -1)} aria-label={`Decrease ${item.name} quantity`}>−</button>
+                          <span>{item.quantity}</span>
+                          <button onClick={() => changeQuantity(item.cartId, 1)} aria-label={`Increase ${item.name} quantity`}>+</button>
                         </div>
                       </div>
+
+                      <div className="cart-item-end">
+                        <strong>₹{item.price * item.quantity}</strong>
+                        <button className="cart-remove-button" onClick={() => removeCartItem(item.cartId)}>Remove</button>
+                      </div>
                     </article>
-                  )
-                })}
-              </div>
-            </>
-          )}
-        </section>
+                  ))}
 
-        {!selectedRestaurant && (
-          <>
-            <section className="content-section">
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">EXPLORE THE WORLD OF FOOD</p>
-                  <h2>Explore cuisines</h2>
+                  <button className="cart-continue-button" onClick={() => selectCategory('All Food')}>← Continue shopping</button>
                 </div>
-              </div>
 
-              <div className="cuisine-grid">
-                {cuisines.map((cuisine) => (
-                  <button
-                    key={cuisine.name}
-                    className={`cuisine-card ${activeCuisine === cuisine.name ? 'selected' : ''}`}
-                    onClick={() => selectCuisine(cuisine.name)}
-                  >
-                    <img className="cuisine-image" src={cuisine.image} alt={`${cuisine.name} cuisine`} />
-                    <div className="cuisine-card-info">
-                      <strong>{cuisine.name}</strong>
-                      <span className="cuisine-description">{cuisine.description}</span>
-                    </div>
-                  </button>
-                ))}
+                <aside className="cart-summary">
+                  <h2>Bill summary</h2>
+
+                  <div className="cart-voucher">
+                    <h3>₹ Finds Wallet · Vouchers</h3>
+                    <p>Choose a sample offer or enter a voucher code.</p>
+
+                    <button className="cart-voucher-option" onClick={() => { setVoucherCode('FINDS10'); setVoucherMessage('') }}>
+                      <strong>FINDS10</strong><span>10% off · Min. order ₹199</span>
+                    </button>
+
+                    <button className="cart-voucher-option" onClick={() => { setVoucherCode('SWEET50'); setVoucherMessage('') }}>
+                      <strong>SWEET50</strong><span>₹50 off · Min. order ₹299</span>
+                    </button>
+
+                    <form className="cart-voucher-form" onSubmit={(event) => { event.preventDefault(); applyVoucher() }}>
+                      <input type="text" value={voucherCode} onChange={(event) => setVoucherCode(event.target.value)} placeholder="Enter voucher code" aria-label="Voucher code" />
+                      <button type="submit">Apply</button>
+                    </form>
+
+                    {voucherMessage && <p className={`cart-voucher-message ${validVoucher ? 'success' : ''}`}>{voucherMessage}</p>}
+                    {appliedVoucher && <button className="cart-remove-button" onClick={removeVoucher}>Remove voucher</button>}
+                  </div>
+
+                  <div className="cart-bill-row"><span>Subtotal ({cartCount} items)</span><strong>₹{cartTotal}</strong></div>
+                  <div className="cart-bill-row"><span>Voucher discount</span><strong className="cart-discount">−₹{discount}</strong></div>
+                  <div className="cart-bill-row cart-final-total"><span>Total amount</span><strong>₹{finalTotal}</strong></div>
+
+                  <button className="cart-checkout-button" onClick={() => alert(`Your cart total is ₹${finalTotal}. Order placement and payment will be connected later.`)}>Proceed to checkout →</button>
+                  <p className="cart-checkout-note">Payment and order placement are not connected yet.</p>
+                </aside>
               </div>
-            </section>
+            )}
+          </section>
+        ) : activeView === 'restaurants' ? (
+          <section className="content-section">
+            {selectedRestaurant ? (
+              <>
+                <button className="category-button" onClick={() => setSelectedRestaurant(null)}>← Back to restaurants</button>
+
+                <div className="restaurant-menu-heading">
+                  <img src={selectedRestaurant.image} alt={selectedRestaurant.name} />
+                  <div>
+                    <p className="eyebrow">{selectedRestaurant.cuisine} CUISINE</p>
+                    <h2>{selectedRestaurant.name}</h2>
+                    <p>{selectedRestaurant.description}</p>
+                    <p>⭐ {selectedRestaurant.rating} · {selectedRestaurant.deliveryTime}</p>
+                  </div>
+                </div>
+
+                <div className="section-heading">
+                  <h2>Restaurant menu</h2>
+                  <span className="dish-count">{selectedRestaurant.menu.length} dishes</span>
+                </div>
+
+                <div className="dish-grid">
+                  {selectedRestaurant.menu.map((dish) => renderDishCard({
+                    ...dish,
+                    cuisine: selectedRestaurant.cuisine,
+                    restaurantName: selectedRestaurant.name,
+                  }))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="section-heading">
+                  <div><p className="eyebrow">FIND YOUR NEXT FAVOURITE</p><h2>Restaurants, cafes and more</h2></div>
+                </div>
+
+                <div className="search-box restaurant-search">
+                  <span>⌕</span>
+                  <input type="text" placeholder="Search restaurants, cafes or cuisines..." value={restaurantSearch} onChange={(event) => setRestaurantSearch(event.target.value)} />
+                </div>
+
+                <div className="restaurant-grid">
+                  {filteredRestaurants.map((restaurant) => (
+                    <button key={restaurant.id} className="restaurant-card" onClick={() => setSelectedRestaurant(restaurant)}>
+                      <img src={restaurant.image} alt={restaurant.name} className="restaurant-image" />
+
+                      <div className="restaurant-info">
+                        <h3>{restaurant.name}</h3>
+                        <p>{restaurant.description}</p>
+                        <div className="restaurant-meta">
+                          <span>⭐ {restaurant.rating}</span>
+                          <span>{restaurant.cuisine}</span>
+                          <span>{restaurant.deliveryTime}</span>
+                        </div>
+                        <strong>View menu →</strong>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {filteredRestaurants.length === 0 && <p className="empty-results">No restaurants found. Try another search.</p>}
+              </>
+            )}
+          </section>
+        ) : (
+          <>
+            <div className="search-box">
+              <span>⌕</span>
+              <input
+                type="text"
+                placeholder={`Search ${activeCategory === 'All Food' ? 'dishes, cuisines or restaurants' : activeCategory.toLowerCase() + ' dishes'}...`}
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </div>
+            {isMainFoodPage && (
+              <section className="finds-discover-hero">
+                <div className="finds-hero-content">
+                  <span className="finds-hero-badge">
+                    ✨ YOUR NEXT FAVOURITE MEAL
+                  </span>
+
+                  <h2>
+                    Good food.
+                    <br />
+                    <span>Great mood.</span>
+                  </h2>
+
+                  <p>
+                    Explore amazing cuisines, discover local favourites,
+                    and find something delicious for every craving.
+                  </p>
+
+                  <div className="finds-hero-actions">
+                    <button
+                      type="button"
+                      className="finds-hero-primary"
+                      onClick={() => {
+                        setActiveCategory('All Food')
+                        setActiveCuisine('All')
+                        setSearch('')
+                      }}
+                    >
+                      Explore food <span>→</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="finds-hero-secondary"
+                      onClick={openRestaurants}
+                    >
+                      Find restaurants
+                    </button>
+                  </div>
+
+                  <div className="finds-hero-note">
+                    <span>🍕</span>
+                    <span>Cravings welcome. Deliciousness guaranteed.</span>
+                  </div>
+                </div>
+
+                <div className="finds-hero-visual">
+                  <img
+                    src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=1000&q=85"
+                    alt="A delicious spread of freshly prepared food"
+                  />
+
+                  <div className="finds-hero-floating-card">
+                    <span className="finds-floating-icon">😋</span>
+                    <div>
+                      <strong>Made for your cravings</strong>
+                      <span>Discover your next favourite</span>
+                    </div>
+                  </div>
+
+                  <span className="finds-hero-decoration finds-decoration-one">✦</span>
+                  <span className="finds-hero-decoration finds-decoration-two">✳</span>
+                </div>
+              </section>
+            )}
+
+            {isMainFoodPage && (
+              <section className="content-section">
+                <div className="section-heading">
+                  <div><p className="eyebrow">EXPLORE THE WORLD OF FOOD</p><h2>Explore cuisines</h2></div>
+                </div>
+
+                <div className="cuisine-grid">
+                  {cuisines.map((cuisine) => (
+                    <button key={cuisine.name} className={`cuisine-card ${activeCuisine === cuisine.name ? 'selected' : ''}`} onClick={() => selectCuisine(cuisine.name)}>
+                      <img className="cuisine-image" src={cuisine.image} alt={`${cuisine.name} cuisine`} />
+
+                      <div className="cuisine-card-info">
+                        <strong>{cuisine.name}</strong>
+                        <span className="cuisine-description">{cuisine.description}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className="content-section">
               <div className="section-heading">
                 <div>
-                  <p className="eyebrow">HANDPICKED FOR YOU</p>
+                  <p className="eyebrow">{activeCategory === 'All Food' ? 'HANDPICKED FOR YOU' : `EXPLORE OUR ${activeCategory.toUpperCase()} MENU`}</p>
+
                   <h2>
                     {activeCategory !== 'All Food'
-                      ? activeCategory
+                      ? `${activeCategory} Options`
                       : activeCuisine !== 'All'
-                        ? `${activeCuisine} dishes`
+                        ? `${activeCuisine} Dishes`
                         : search.trim()
                           ? 'Search results'
                           : 'Popular dishes'}
                   </h2>
                 </div>
-                <span className="dish-count">
-                  {filteredDishes.length} {filteredDishes.length === 1 ? 'dish' : 'dishes'}
-                </span>
+
+                <span className="dish-count">{filteredDishes.length} {filteredDishes.length === 1 ? 'dish' : 'dishes'}</span>
               </div>
 
               {(activeCategory !== 'All Food' || activeCuisine !== 'All' || search.trim()) && (
-                <button
-                  className="category-button"
-                  onClick={() => {
-                    setActiveCategory('All Food')
-                    setActiveCuisine('All')
-                    setSearch('')
-                  }}
-                >
+                <button className="category-button" onClick={() => {
+                  setActiveCategory('All Food')
+                  setActiveCuisine('All')
+                  setSearch('')
+                }}>
                   Clear filters ×
                 </button>
               )}
 
               {filteredDishes.length > 0 ? (
-                <div className="dish-grid">
-                  {filteredDishes.map((dish) => {
-                    const cartId = `${dish.restaurantName}-${dish.id}`
-                    const cartItem = cart.find((item) => item.cartId === cartId)
-
-                    return (
-                      <article className="dish-card" key={cartId}>
-                        <div className="dish-image">
-                          <img src={dish.image} alt={dish.name} />
-                        </div>
-                        <div className="dish-details">
-                          <span className="dish-cuisine">
-                            {dish.cuisine} · {dish.category}
-                          </span>
-                          <h3>{dish.name}</h3>
-                          <p>{dish.description}</p>
-                          <p className="dish-restaurant-name">{dish.restaurantName}</p>
-                          <div className="dish-footer">
-                            <strong>₹{dish.price}</strong>
-                            {cartItem ? (
-                              <div className="quantity-controls">
-                                <button onClick={() => changeQuantity(cartId, -1)}>−</button>
-                                <span>{cartItem.quantity}</span>
-                                <button onClick={() => addToCart(dish, dish.restaurantName)}>+</button>
-                              </div>
-                            ) : (
-                              <button onClick={() => addToCart(dish, dish.restaurantName)}>
-                                + Add
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </article>
-                    )
-                  })}
-                </div>
+                <div className="dish-grid">{filteredDishes.map((dish) => renderDishCard(dish))}</div>
               ) : (
-                <p className="empty-results">No dishes found. Try another search or clear your filters.</p>
+                <p className="empty-results">No dishes found in this category yet. Try another category or search.</p>
               )}
             </section>
           </>
         )}
 
         <footer className="home-footer">
-          Made with love for food lovers. <strong>.finds</strong>
+          Made with love for food lovers. <strong>finds</strong>
         </footer>
       </main>
     </div>
