@@ -53,4 +53,5 @@ The goal of Finds is to create a smarter and more personalised food platform tha
 ---
 
 **Developed by Naman Shetty**
+GitHub: @shettynaman01-cyber
 
