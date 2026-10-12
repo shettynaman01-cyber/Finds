@@ -1,9 +1,10 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import '../App.css'
 import '../profile-styles.css'
 import FindsWellness from './FindsWellness'
 import FoodCustomizationModal from './FoodCustomizationModal'
+import FoodDetailsModal from './FoodDetailsModal'
 
 const categories = [
   'All Food', 'Breakfast', 'Lunch', 'Dinner',
@@ -33,7 +34,7 @@ function makeDish(id, name, category, price, description) {
   return { id, name, category, price, description, image: foodImages[category] }
 }
 
-const restaurants = [
+const fallbackRestaurants = [
   {
     id: 1, name: 'Spice Garden', cuisine: 'Indian',
     description: 'Traditional Indian meals and curries',
@@ -174,13 +175,175 @@ const vouchers = {
 }
 
 function Home() {
+  const [restaurants, setRestaurants] = useState(fallbackRestaurants)
+  const [isLoadingFood, setIsLoadingFood] = useState(true)
+  const [foodLoadError, setFoodLoadError] = useState('')
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadFoodData() {
+      try {
+        setIsLoadingFood(true)
+        setFoodLoadError('')
+
+        const [foodsResponse, restaurantsResponse] = await Promise.all([
+          fetch('http://localhost:5000/api/foods'),
+          fetch('http://localhost:5000/api/restaurants'),
+        ])
+
+        if (!foodsResponse.ok) {
+          throw new Error('Could not load food items from the server.')
+        }
+
+        const foodsData = await foodsResponse.json()
+        const restaurantsData = restaurantsResponse.ok
+          ? await restaurantsResponse.json()
+          : { restaurants: [] }
+
+        const foods = Array.isArray(foodsData.foods) ? foodsData.foods : []
+        const restaurantRows = Array.isArray(restaurantsData.restaurants)
+          ? restaurantsData.restaurants
+          : []
+
+        const mapFood = (food, restaurant) => ({
+          id: Number(food.id),
+          restaurantId: Number(food.restaurant_id ?? restaurant?.id),
+          name: food.name || 'Untitled dish',
+          category: food.category || 'Other',
+          price: Number(food.price) || 0,
+          description: food.description || 'A delicious choice from Finds.',
+          image:
+            food.image_url ||
+            food.image ||
+            foodImages[food.category] ||
+            foodImages.Lunch,
+          isVegetarian:
+            food.is_vegetarian == null
+              ? null
+              : Boolean(Number(food.is_vegetarian)),
+          cuisine: food.restaurant_cuisine || restaurant?.cuisine || 'Other',
+          restaurantName: food.restaurant_name || restaurant?.name || 'Finds Restaurant',
+        })
+
+        const mappedRestaurants = restaurantRows.map((restaurant) => {
+          const restaurantFoods = foods
+            .filter((food) => Number(food.restaurant_id) === Number(restaurant.id))
+            .map((food) => mapFood(food, restaurant))
+
+          return {
+            id: Number(restaurant.id),
+            name: restaurant.name || 'Restaurant',
+            cuisine: restaurant.cuisine || restaurant.category || 'Various',
+            description:
+              restaurant.description ||
+              `Discover delicious dishes from ${restaurant.name || 'this restaurant'}.`,
+            rating: restaurant.rating ?? restaurant.average_rating ?? 'New',
+            deliveryTime: restaurant.delivery_time || restaurant.deliveryTime || '30–40 min',
+            image:
+              restaurant.image_url ||
+              restaurant.image ||
+              restaurant.photo_url ||
+              'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80',
+            menu: restaurantFoods,
+          }
+        })
+
+        const groupedRestaurants = []
+        const restaurantMap = new Map()
+
+        foods.forEach((food) => {
+          const id = Number(food.restaurant_id)
+          if (!id) return
+
+          if (!restaurantMap.has(id)) {
+            const matchingRestaurant = restaurantRows.find(
+              (restaurant) => Number(restaurant.id) === id
+            )
+
+            const row = matchingRestaurant || {
+              id,
+              name: food.restaurant_name || 'Finds Restaurant',
+              cuisine: food.restaurant_cuisine || 'Various',
+            }
+
+            const grouped = {
+              id,
+              name: row.name || food.restaurant_name || 'Finds Restaurant',
+              cuisine: row.cuisine || food.restaurant_cuisine || 'Various',
+              description:
+                row.description ||
+                `Discover delicious dishes from ${row.name || food.restaurant_name || 'this restaurant'}.`,
+              rating: row.rating ?? row.average_rating ?? 'New',
+              deliveryTime: row.delivery_time || row.deliveryTime || '30–40 min',
+              image:
+                row.image_url ||
+                row.image ||
+                row.photo_url ||
+                'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80',
+              menu: [],
+            }
+
+            restaurantMap.set(id, grouped)
+            groupedRestaurants.push(grouped)
+          }
+
+          const restaurant = restaurantMap.get(id)
+          restaurant.menu.push(mapFood(food, restaurant))
+        })
+
+        if (isMounted) {
+          setRestaurants(
+            mappedRestaurants.length > 0 ? mappedRestaurants : groupedRestaurants
+          )
+
+          if (foods.length === 0) {
+            setFoodLoadError('No available food items were returned by the database.')
+          }
+        }
+      } catch (error) {
+        console.error('Finds food loading error:', error)
+
+        if (isMounted) {
+          setFoodLoadError(
+            'Could not connect to the food database. Showing sample food for now. Check that the backend is running.'
+          )
+        }
+      } finally {
+        if (isMounted) setIsLoadingFood(false)
+      }
+    }
+
+    loadFoodData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   const [activeCategory, setActiveCategory] = useState('All Food')
   const [activeCuisine, setActiveCuisine] = useState('All')
+
   const [search, setSearch] = useState('')
+  const [dietFilter, setDietFilter] = useState('all')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [sortBy, setSortBy] = useState('popular')
+  const [showFilters, setShowFilters] = useState(false)
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '',
+    dietFilter: 'all',
+    minPrice: '',
+    maxPrice: '',
+    sortBy: 'popular',
+  })
+
   const [restaurantSearch, setRestaurantSearch] = useState('')
   const [activeView, setActiveView] = useState('food')
   const [selectedRestaurant, setSelectedRestaurant] = useState(null)
   const [selectedDish, setSelectedDish] = useState(null)
+  const [dishModalType, setDishModalType] = useState('customize')
   const [cart, setCart] = useState([])
   const [voucherCode, setVoucherCode] = useState('')
   const [appliedVoucher, setAppliedVoucher] = useState(null)
@@ -191,17 +354,18 @@ function Home() {
   const [profile, setProfile] = useState(() => {
     try {
       const savedProfile = localStorage.getItem('findsProfile')
+
       return savedProfile
         ? JSON.parse(savedProfile)
         : {
-          name: localStorage.getItem('name') || '',
-          email: localStorage.getItem('email') || '',
-          phone: '',
-          address: '',
-          city: '',
-          pincode: '',
-          preferences: ['Vegetarian'],
-        }
+            name: localStorage.getItem('name') || '',
+            email: localStorage.getItem('email') || '',
+            phone: '',
+            address: '',
+            city: '',
+            pincode: '',
+            preferences: ['Vegetarian'],
+          }
     } catch {
       return {
         name: '',
@@ -233,6 +397,7 @@ function Home() {
   function toggleFoodPreference(preference) {
     setProfile((current) => {
       const preferences = current.preferences || []
+
       return {
         ...current,
         preferences: preferences.includes(preference)
@@ -266,15 +431,27 @@ function Home() {
     setSelectedRestaurant(null)
     setSelectedDish(null)
     setSearch('')
+
+    setAppliedFilters((current) => ({
+      ...current,
+      search: '',
+    }))
   }
 
   function selectCuisine(cuisine) {
-    setActiveCuisine(activeCuisine === cuisine ? 'All' : cuisine)
+    const nextCuisine = activeCuisine === cuisine ? 'All' : cuisine
+
+    setActiveCuisine(nextCuisine)
     setActiveCategory('All Food')
     setActiveView('food')
     setSelectedRestaurant(null)
     setSelectedDish(null)
     setSearch('')
+
+    setAppliedFilters((current) => ({
+      ...current,
+      search: '',
+    }))
   }
 
   function openRestaurants() {
@@ -346,24 +523,140 @@ function Home() {
       .includes(restaurantSearch.trim().toLowerCase())
   )
 
-  const filteredDishes = allDishes.filter((dish) => {
-    const term = search.trim().toLowerCase()
-    const matchesSearch =
-      dish.name.toLowerCase().includes(term) ||
-      dish.cuisine.toLowerCase().includes(term) ||
-      dish.category.toLowerCase().includes(term) ||
-      dish.description.toLowerCase().includes(term) ||
-      dish.restaurantName.toLowerCase().includes(term)
+  const filteredDishes = allDishes
+    .filter((dish) => {
+      const term = appliedFilters.search.trim().toLowerCase()
 
-    return (
-      matchesSearch &&
-      (activeCategory === 'All Food' || dish.category === activeCategory) &&
-      (activeCuisine === 'All' || dish.cuisine === activeCuisine)
-    )
-  })
+      const searchableText = [
+        dish.name,
+        dish.cuisine,
+        dish.category,
+        dish.description,
+        dish.restaurantName,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      const matchesSearch = !term || searchableText.includes(term)
+
+      const matchesCategory =
+        activeCategory === 'All Food' || dish.category === activeCategory
+
+      const matchesCuisine =
+        activeCuisine === 'All' ||
+        dish.cuisine.toLowerCase().includes(activeCuisine.toLowerCase())
+
+      const matchesDiet =
+        appliedFilters.dietFilter === 'all' ||
+        (appliedFilters.dietFilter === 'vegetarian' &&
+          dish.isVegetarian === true) ||
+        (appliedFilters.dietFilter === 'non-vegetarian' &&
+          dish.isVegetarian === false)
+
+      const price = Number(dish.price)
+
+      const matchesMinPrice =
+        appliedFilters.minPrice === '' ||
+        price >= Number(appliedFilters.minPrice)
+
+      const matchesMaxPrice =
+        appliedFilters.maxPrice === '' ||
+        price <= Number(appliedFilters.maxPrice)
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesCuisine &&
+        matchesDiet &&
+        matchesMinPrice &&
+        matchesMaxPrice
+      )
+    })
+    .sort((a, b) => {
+      if (appliedFilters.sortBy === 'price-low') {
+        return Number(a.price) - Number(b.price)
+      }
+
+      if (appliedFilters.sortBy === 'price-high') {
+        return Number(b.price) - Number(a.price)
+      }
+
+      if (appliedFilters.sortBy === 'name') {
+        return a.name.localeCompare(b.name)
+      }
+
+      return 0
+    })
+
+  function applyFoodFilters() {
+    const minimum = minPrice === '' ? '' : Number(minPrice)
+    const maximum = maxPrice === '' ? '' : Number(maxPrice)
+
+    if (
+      (minimum !== '' && minimum < 0) ||
+      (maximum !== '' && maximum < 0)
+    ) {
+      alert('Price cannot be negative.')
+      return
+    }
+
+    if (minimum !== '' && maximum !== '' && minimum > maximum) {
+      alert('Minimum price cannot be greater than maximum price.')
+      return
+    }
+
+    setAppliedFilters({
+      search: search.trim(),
+      dietFilter,
+      minPrice,
+      maxPrice,
+      sortBy,
+    })
+
+    setActiveView('search-results')
+    setSelectedRestaurant(null)
+    setSelectedDish(null)
+  }
+
+  function clearFoodFilters() {
+    setSearch('')
+    setActiveCategory('All Food')
+    setActiveCuisine('All')
+    setDietFilter('all')
+    setMinPrice('')
+    setMaxPrice('')
+    setSortBy('popular')
+    setShowFilters(false)
+    setSelectedDish(null)
+    setSelectedRestaurant(null)
+
+    setAppliedFilters({
+      search: '',
+      dietFilter: 'all',
+      minPrice: '',
+      maxPrice: '',
+      sortBy: 'popular',
+    })
+
+    setActiveView('food')
+  }
+
+  function editFoodSearch() {
+    setSearch(appliedFilters.search)
+    setDietFilter(appliedFilters.dietFilter)
+    setMinPrice(appliedFilters.minPrice)
+    setMaxPrice(appliedFilters.maxPrice)
+    setSortBy(appliedFilters.sortBy)
+    setShowFilters(true)
+    setActiveView('food')
+  }
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0)
-  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0)
+  const cartTotal = cart.reduce(
+    (total, item) => total + Number(item.price) * item.quantity,
+    0
+  )
 
   const validVoucher =
     appliedVoucher && cartTotal >= appliedVoucher.minimum && cartTotal > 0
@@ -372,12 +665,12 @@ function Home() {
 
   const discount = validVoucher
     ? Math.min(
-      validVoucher.type === 'percentage'
-        ? Math.round(cartTotal * validVoucher.value / 100)
-        : validVoucher.value,
-      validVoucher.maxDiscount ?? Infinity,
-      cartTotal
-    )
+        validVoucher.type === 'percentage'
+          ? Math.round((cartTotal * validVoucher.value) / 100)
+          : validVoucher.value,
+        validVoucher.maxDiscount ?? Infinity,
+        cartTotal
+      )
     : 0
 
   const finalTotal = Math.max(0, cartTotal - discount)
@@ -406,7 +699,9 @@ function Home() {
 
     if (cartTotal < voucher.minimum) {
       setAppliedVoucher(null)
-      setVoucherMessage(`Add items worth ₹${voucher.minimum - cartTotal} more to use ${code}.`)
+      setVoucherMessage(
+        `Add items worth ₹${voucher.minimum - cartTotal} more to use ${code}.`
+      )
       return
     }
 
@@ -431,11 +726,15 @@ function Home() {
           role="button"
           tabIndex={0}
           style={{ cursor: 'pointer' }}
-          onClick={() => setSelectedDish(dish)}
+          onClick={() => {
+            setSelectedDish(dish)
+            setDishModalType('details')
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault()
               setSelectedDish(dish)
+              setDishModalType('details')
             }
           }}
         >
@@ -448,7 +747,10 @@ function Home() {
           </span>
 
           <h3
-            onClick={() => setSelectedDish(dish)}
+            onClick={() => {
+              setSelectedDish(dish)
+              setDishModalType('details')
+            }}
             style={{ cursor: 'pointer' }}
           >
             {dish.name}
@@ -457,13 +759,36 @@ function Home() {
           <p>{dish.description}</p>
           <p className="dish-restaurant-name">{dish.restaurantName}</p>
 
-          <button
-            type="button"
-            className="category-button"
-            onClick={() => setSelectedDish(dish)}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginTop: '12px',
+            }}
           >
-            Customize / View details
-          </button>
+            <button
+              type="button"
+              className="category-button"
+              onClick={() => {
+                setSelectedDish(dish)
+                setDishModalType('details')
+              }}
+            >
+              View Details
+            </button>
+
+            <button
+              type="button"
+              className="category-button"
+              onClick={() => {
+                setSelectedDish(dish)
+                setDishModalType('customize')
+              }}
+            >
+              Customize
+            </button>
+          </div>
 
           <div className="dish-footer">
             <strong>₹{dish.price}</strong>
@@ -499,7 +824,7 @@ function Home() {
     activeView === 'food' &&
     activeCategory === 'All Food' &&
     activeCuisine === 'All' &&
-    !search.trim()
+    !appliedFilters.search.trim()
 
   const pageTitle =
     activeView === 'cart'
@@ -508,15 +833,17 @@ function Home() {
         ? 'My Profile'
         : activeView === 'wellness'
           ? 'Finds Wellness'
-          : activeView === 'restaurants'
-            ? selectedRestaurant
-              ? selectedRestaurant.name
-              : 'Explore restaurants'
-            : activeCategory !== 'All Food'
-              ? `${activeCategory} Options`
-              : activeCuisine !== 'All'
-                ? `${activeCuisine} Dishes`
-                : 'Discover something delicious.'
+          : activeView === 'search-results'
+            ? 'Search Results'
+            : activeView === 'restaurants'
+              ? selectedRestaurant
+                ? selectedRestaurant.name
+                : 'Explore restaurants'
+              : activeCategory !== 'All Food'
+                ? `${activeCategory} Options`
+                : activeCuisine !== 'All'
+                  ? `${activeCuisine} Dishes`
+                  : 'Discover something delicious.'
 
   const pageDescription =
     activeView === 'cart'
@@ -525,13 +852,15 @@ function Home() {
         ? 'Manage your personal details, delivery address and food preferences.'
         : activeView === 'wellness'
           ? 'Discover healthy meals and explore food for your lifestyle.'
-          : activeView === 'restaurants'
-            ? selectedRestaurant
-              ? selectedRestaurant.description
-              : 'Find restaurants, cafes and your next favourite meal.'
-            : activeCategory !== 'All Food'
-              ? `Explore delicious ${activeCategory.toLowerCase()} options.`
-              : 'Find the food you are craving today.'
+          : activeView === 'search-results'
+            ? 'Here are the dishes that match your submitted search and filters.'
+            : activeView === 'restaurants'
+              ? selectedRestaurant
+                ? selectedRestaurant.description
+                : 'Find restaurants, cafes and your next favourite meal.'
+              : activeCategory !== 'All Food'
+                ? `Explore delicious ${activeCategory.toLowerCase()} options.`
+                : 'Find the food you are craving today.'
 
   return (
     <div className="home-page">
@@ -550,10 +879,13 @@ function Home() {
           {categories.map((category) => (
             <button
               key={category}
-              className={`category-button ${activeView === 'food' && !selectedRestaurant && activeCategory === category
+              className={`category-button ${
+                activeView === 'food' &&
+                !selectedRestaurant &&
+                activeCategory === category
                   ? 'active'
                   : ''
-                }`}
+              }`}
               onClick={() => selectCategory(category)}
             >
               {category}
@@ -593,7 +925,24 @@ function Home() {
           </button>
         </header>
 
-        {selectedDish && (
+        {foodLoadError && (
+          <p className="empty-results" role="status">{foodLoadError}</p>
+        )}
+
+        {isLoadingFood && (
+          <p className="empty-results" role="status">
+            Loading food and restaurants from Finds...
+          </p>
+        )}
+
+        {selectedDish && dishModalType === 'details' && (
+          <FoodDetailsModal
+            dish={selectedDish}
+            onClose={() => setSelectedDish(null)}
+          />
+        )}
+
+        {selectedDish && dishModalType === 'customize' && (
           <FoodCustomizationModal
             dish={selectedDish}
             onClose={() => setSelectedDish(null)}
@@ -613,12 +962,18 @@ function Home() {
           <section className="content-section profile-page">
             <div className="profile-welcome-card">
               <div className="profile-avatar">
-                {profile.name.trim() ? profile.name.trim().charAt(0).toUpperCase() : 'U'}
+                {profile.name.trim()
+                  ? profile.name.trim().charAt(0).toUpperCase()
+                  : 'U'}
               </div>
+
               <div className="profile-welcome-copy">
                 <p className="eyebrow">YOUR FINDS ACCOUNT</p>
                 <h2>{profile.name.trim() || 'Welcome to Finds'}</h2>
-                <p>Keep your details up to date for a smoother food delivery experience.</p>
+                <p>
+                  Keep your details up to date for a smoother food delivery
+                  experience.
+                </p>
               </div>
 
               {!isEditingProfile && (
@@ -638,59 +993,113 @@ function Home() {
               <div className="profile-main-column">
                 <section className="profile-card">
                   <div className="profile-card-heading">
-                    <div><span className="profile-icon">♙</span><h2>Personal Information</h2></div>
-                    <span className="profile-card-note">{isEditingProfile ? 'Editing details' : 'Your account details'}</span>
+                    <div>
+                      <span className="profile-icon">♙</span>
+                      <h2>Personal Information</h2>
+                    </div>
+                    <span className="profile-card-note">
+                      {isEditingProfile ? 'Editing details' : 'Your account details'}
+                    </span>
                   </div>
 
                   <div className="profile-fields-grid">
                     <label className="profile-field">
                       <span>Full name</span>
-                      <input value={profile.name} onChange={(event) => updateProfileField('name', event.target.value)} placeholder="Enter your full name" readOnly={!isEditingProfile} />
+                      <input
+                        value={profile.name}
+                        onChange={(event) => updateProfileField('name', event.target.value)}
+                        placeholder="Enter your full name"
+                        readOnly={!isEditingProfile}
+                      />
                     </label>
 
                     <label className="profile-field">
                       <span>Email address</span>
-                      <input type="email" value={profile.email} onChange={(event) => updateProfileField('email', event.target.value)} placeholder="Enter your email address" readOnly={!isEditingProfile} />
+                      <input
+                        type="email"
+                        value={profile.email}
+                        onChange={(event) => updateProfileField('email', event.target.value)}
+                        placeholder="Enter your email address"
+                        readOnly={!isEditingProfile}
+                      />
                     </label>
 
                     <label className="profile-field">
                       <span>Phone number</span>
-                      <input type="tel" value={profile.phone} onChange={(event) => updateProfileField('phone', event.target.value)} placeholder="Enter your phone number" readOnly={!isEditingProfile} />
+                      <input
+                        type="tel"
+                        value={profile.phone}
+                        onChange={(event) => updateProfileField('phone', event.target.value)}
+                        placeholder="Enter your phone number"
+                        readOnly={!isEditingProfile}
+                      />
                     </label>
                   </div>
                 </section>
 
                 <section className="profile-card">
                   <div className="profile-card-heading">
-                    <div><span className="profile-icon">⌖</span><h2>Delivery Address</h2></div>
+                    <div>
+                      <span className="profile-icon">⌖</span>
+                      <h2>Delivery Address</h2>
+                    </div>
                     <span className="profile-card-note">Where should we deliver?</span>
                   </div>
 
                   <div className="profile-fields-grid">
                     <label className="profile-field profile-field-wide">
                       <span>House number, street and area</span>
-                      <input value={profile.address} onChange={(event) => updateProfileField('address', event.target.value)} placeholder="Enter your complete address" readOnly={!isEditingProfile} />
+                      <input
+                        value={profile.address}
+                        onChange={(event) => updateProfileField('address', event.target.value)}
+                        placeholder="Enter your complete address"
+                        readOnly={!isEditingProfile}
+                      />
                     </label>
 
                     <label className="profile-field">
                       <span>City</span>
-                      <input value={profile.city} onChange={(event) => updateProfileField('city', event.target.value)} placeholder="Enter your city" readOnly={!isEditingProfile} />
+                      <input
+                        value={profile.city}
+                        onChange={(event) => updateProfileField('city', event.target.value)}
+                        placeholder="Enter your city"
+                        readOnly={!isEditingProfile}
+                      />
                     </label>
 
                     <label className="profile-field">
                       <span>PIN code</span>
-                      <input inputMode="numeric" maxLength={6} value={profile.pincode} onChange={(event) => updateProfileField('pincode', event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit PIN code" readOnly={!isEditingProfile} />
+                      <input
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={profile.pincode}
+                        onChange={(event) =>
+                          updateProfileField(
+                            'pincode',
+                            event.target.value.replace(/\D/g, '').slice(0, 6)
+                          )
+                        }
+                        placeholder="6-digit PIN code"
+                        readOnly={!isEditingProfile}
+                      />
                     </label>
                   </div>
                 </section>
 
                 <section className="profile-card">
                   <div className="profile-card-heading">
-                    <div><span className="profile-icon">♡</span><h2>Food Preferences</h2></div>
-                    <span className="profile-card-note">Personalise your discovery</span>
+                    <div>
+                      <span className="profile-icon">♡</span>
+                      <h2>Food Preferences</h2>
+                    </div>
+                    <span className="profile-card-note">
+                      Personalise your discovery
+                    </span>
                   </div>
 
-                  <p className="profile-section-description">Choose the food types and cuisines you usually enjoy.</p>
+                  <p className="profile-section-description">
+                    Choose the food types and cuisines you usually enjoy.
+                  </p>
 
                   <div className="food-preference-list">
                     {foodPreferenceOptions.map((preference) => (
@@ -698,21 +1107,34 @@ function Home() {
                         type="button"
                         key={preference}
                         disabled={!isEditingProfile}
-                        className={`food-preference-chip ${(profile.preferences || []).includes(preference) ? 'selected' : ''}`}
+                        className={`food-preference-chip ${
+                          (profile.preferences || []).includes(preference)
+                            ? 'selected'
+                            : ''
+                        }`}
                         onClick={() => toggleFoodPreference(preference)}
                       >
-                        {(profile.preferences || []).includes(preference) ? '✓ ' : '+ '}{preference}
+                        {(profile.preferences || []).includes(preference) ? '✓ ' : '+ '}
+                        {preference}
                       </button>
                     ))}
                   </div>
 
-                  {!isEditingProfile && <p className="profile-help-text">Select Edit profile to change your preferences.</p>}
+                  {!isEditingProfile && (
+                    <p className="profile-help-text">
+                      Select Edit profile to change your preferences.
+                    </p>
+                  )}
                 </section>
 
                 {isEditingProfile && (
                   <div className="profile-save-actions">
-                    <button className="profile-cancel-button" onClick={cancelProfileEdit}>Cancel</button>
-                    <button className="profile-save-button" onClick={saveProfile}>Save changes</button>
+                    <button className="profile-cancel-button" onClick={cancelProfileEdit}>
+                      Cancel
+                    </button>
+                    <button className="profile-save-button" onClick={saveProfile}>
+                      Save changes
+                    </button>
                   </div>
                 )}
               </div>
@@ -721,42 +1143,84 @@ function Home() {
                 <section className="finds-wallet-card">
                   <div className="wallet-title-row">
                     <span className="wallet-symbol">₹</span>
-                    <div><p>YOUR REWARDS</p><h2>Finds Wallet</h2></div>
+                    <div>
+                      <p>YOUR REWARDS</p>
+                      <h2>Finds Wallet</h2>
+                    </div>
                   </div>
 
                   <p className="wallet-balance-label">Available balance</p>
                   <p className="wallet-balance">₹0.00</p>
-                  <p className="wallet-description">Your wallet balance and eligible rewards will appear here.</p>
+                  <p className="wallet-description">
+                    Your wallet balance and eligible rewards will appear here.
+                  </p>
                   <div className="wallet-divider" />
 
                   <div className="wallet-voucher-row">
                     <div className="voucher-icon">%</div>
-                    <div className="wallet-voucher-copy"><h3>Vouchers & offers</h3><p>Find discounts for your next order</p></div>
+                    <div className="wallet-voucher-copy">
+                      <h3>Vouchers & offers</h3>
+                      <p>Find discounts for your next order</p>
+                    </div>
                   </div>
 
-                  <button className="wallet-voucher-button" onClick={() => alert('Your vouchers and offers will be available here once offers are connected to Finds.')}>
+                  <button
+                    className="wallet-voucher-button"
+                    onClick={() =>
+                      alert(
+                        'Your vouchers and offers will be available here once offers are connected to Finds.'
+                      )
+                    }
+                  >
                     View vouchers <span>→</span>
                   </button>
 
-                  <p className="wallet-small-note">Wallet payments and vouchers will be connected later.</p>
+                  <p className="wallet-small-note">
+                    Wallet payments and vouchers will be connected later.
+                  </p>
                 </section>
 
                 <section className="profile-card support-card">
-                  <div className="profile-card-heading"><div><span className="profile-icon">?</span><h2>Help & Support</h2></div></div>
+                  <div className="profile-card-heading">
+                    <div>
+                      <span className="profile-icon">?</span>
+                      <h2>Help & Support</h2>
+                    </div>
+                  </div>
 
-                  <button className="support-link" onClick={() => alert('Contact Us will be connected to Finds customer support soon.')}>
+                  <button
+                    className="support-link"
+                    onClick={() =>
+                      alert('Contact Us will be connected to Finds customer support soon.')
+                    }
+                  >
                     <span className="support-link-icon">✉</span>
-                    <span className="support-link-copy"><strong>Contact Us</strong><small>Questions or feedback? We can help.</small></span>
+                    <span className="support-link-copy">
+                      <strong>Contact Us</strong>
+                      <small>Questions or feedback? We can help.</small>
+                    </span>
                     <span className="support-arrow">→</span>
                   </button>
 
-                  <button className="support-link" onClick={() => alert('The customer helpline number will be added when Finds support is set up.')}>
+                  <button
+                    className="support-link"
+                    onClick={() =>
+                      alert(
+                        'The customer helpline number will be added when Finds support is set up.'
+                      )
+                    }
+                  >
                     <span className="support-link-icon">☎</span>
-                    <span className="support-link-copy"><strong>Customer Helpline</strong><small>Get help with your account or orders.</small></span>
+                    <span className="support-link-copy">
+                      <strong>Customer Helpline</strong>
+                      <small>Get help with your account or orders.</small>
+                    </span>
                     <span className="support-arrow">→</span>
                   </button>
 
-                  <p className="support-note">Support contact details will be added before launch.</p>
+                  <p className="support-note">
+                    Support contact details will be added before launch.
+                  </p>
                 </section>
               </aside>
             </div>
@@ -768,14 +1232,21 @@ function Home() {
                 <div className="cart-empty-icon">🛒</div>
                 <h2>Your cart is empty</h2>
                 <p>Discover something delicious and add it to your cart.</p>
-                <button className="cart-continue-button" onClick={() => selectCategory('All Food')}>Explore food</button>
+                <button
+                  className="cart-continue-button"
+                  onClick={() => selectCategory('All Food')}
+                >
+                  Explore food
+                </button>
               </div>
             ) : (
               <div className="cart-layout">
                 <div className="cart-items-panel">
                   <div className="section-heading">
                     <h2>Your selected items</h2>
-                    <span className="dish-count">{cartCount} {cartCount === 1 ? 'item' : 'items'}</span>
+                    <span className="dish-count">
+                      {cartCount} {cartCount === 1 ? 'item' : 'items'}
+                    </span>
                   </div>
 
                   {cart.map((item) => (
@@ -794,20 +1265,40 @@ function Home() {
                         )}
 
                         <div className="quantity-controls">
-                          <button onClick={() => changeQuantity(item.cartId, -1)} aria-label={`Decrease ${item.name} quantity`}>−</button>
+                          <button
+                            onClick={() => changeQuantity(item.cartId, -1)}
+                            aria-label={`Decrease ${item.name} quantity`}
+                          >
+                            −
+                          </button>
                           <span>{item.quantity}</span>
-                          <button onClick={() => changeQuantity(item.cartId, 1)} aria-label={`Increase ${item.name} quantity`}>+</button>
+                          <button
+                            onClick={() => changeQuantity(item.cartId, 1)}
+                            aria-label={`Increase ${item.name} quantity`}
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
 
                       <div className="cart-item-end">
-                        <strong>₹{item.price * item.quantity}</strong>
-                        <button className="cart-remove-button" onClick={() => removeCartItem(item.cartId)}>Remove</button>
+                        <strong>₹{Number(item.price) * item.quantity}</strong>
+                        <button
+                          className="cart-remove-button"
+                          onClick={() => removeCartItem(item.cartId)}
+                        >
+                          Remove
+                        </button>
                       </div>
                     </article>
                   ))}
 
-                  <button className="cart-continue-button" onClick={() => selectCategory('All Food')}>← Continue shopping</button>
+                  <button
+                    className="cart-continue-button"
+                    onClick={() => selectCategory('All Food')}
+                  >
+                    ← Continue shopping
+                  </button>
                 </div>
 
                 <aside className="cart-summary">
@@ -817,29 +1308,89 @@ function Home() {
                     <h3>₹ Finds Wallet · Vouchers</h3>
                     <p>Choose a sample offer or enter a voucher code.</p>
 
-                    <button className="cart-voucher-option" onClick={() => { setVoucherCode('FINDS10'); setVoucherMessage('') }}>
-                      <strong>FINDS10</strong><span>10% off · Min. order ₹199</span>
+                    <button
+                      className="cart-voucher-option"
+                      onClick={() => {
+                        setVoucherCode('FINDS10')
+                        setVoucherMessage('')
+                      }}
+                    >
+                      <strong>FINDS10</strong>
+                      <span>10% off · Min. order ₹199</span>
                     </button>
 
-                    <button className="cart-voucher-option" onClick={() => { setVoucherCode('SWEET50'); setVoucherMessage('') }}>
-                      <strong>SWEET50</strong><span>₹50 off · Min. order ₹299</span>
+                    <button
+                      className="cart-voucher-option"
+                      onClick={() => {
+                        setVoucherCode('SWEET50')
+                        setVoucherMessage('')
+                      }}
+                    >
+                      <strong>SWEET50</strong>
+                      <span>₹50 off · Min. order ₹299</span>
                     </button>
 
-                    <form className="cart-voucher-form" onSubmit={(event) => { event.preventDefault(); applyVoucher() }}>
-                      <input type="text" value={voucherCode} onChange={(event) => setVoucherCode(event.target.value)} placeholder="Enter voucher code" aria-label="Voucher code" />
+                    <form
+                      className="cart-voucher-form"
+                      onSubmit={(event) => {
+                        event.preventDefault()
+                        applyVoucher()
+                      }}
+                    >
+                      <input
+                        type="text"
+                        value={voucherCode}
+                        onChange={(event) => setVoucherCode(event.target.value)}
+                        placeholder="Enter voucher code"
+                        aria-label="Voucher code"
+                      />
                       <button type="submit">Apply</button>
                     </form>
 
-                    {voucherMessage && <p className={`cart-voucher-message ${validVoucher ? 'success' : ''}`}>{voucherMessage}</p>}
-                    {appliedVoucher && <button className="cart-remove-button" onClick={removeVoucher}>Remove voucher</button>}
+                    {voucherMessage && (
+                      <p
+                        className={`cart-voucher-message ${
+                          validVoucher ? 'success' : ''
+                        }`}
+                      >
+                        {voucherMessage}
+                      </p>
+                    )}
+
+                    {appliedVoucher && (
+                      <button className="cart-remove-button" onClick={removeVoucher}>
+                        Remove voucher
+                      </button>
+                    )}
                   </div>
 
-                  <div className="cart-bill-row"><span>Subtotal ({cartCount} items)</span><strong>₹{cartTotal}</strong></div>
-                  <div className="cart-bill-row"><span>Voucher discount</span><strong className="cart-discount">−₹{discount}</strong></div>
-                  <div className="cart-bill-row cart-final-total"><span>Total amount</span><strong>₹{finalTotal}</strong></div>
+                  <div className="cart-bill-row">
+                    <span>Subtotal ({cartCount} items)</span>
+                    <strong>₹{cartTotal}</strong>
+                  </div>
+                  <div className="cart-bill-row">
+                    <span>Voucher discount</span>
+                    <strong className="cart-discount">−₹{discount}</strong>
+                  </div>
+                  <div className="cart-bill-row cart-final-total">
+                    <span>Total amount</span>
+                    <strong>₹{finalTotal}</strong>
+                  </div>
 
-                  <button className="cart-checkout-button" onClick={() => alert(`Your cart total is ₹${finalTotal}. Order placement and payment will be connected later.`)}>Proceed to checkout →</button>
-                  <p className="cart-checkout-note">Payment and order placement are not connected yet.</p>
+                  <button
+                    className="cart-checkout-button"
+                    onClick={() =>
+                      alert(
+                        `Your cart total is ₹${finalTotal}. Order placement and payment will be connected later.`
+                      )
+                    }
+                  >
+                    Proceed to checkout →
+                  </button>
+
+                  <p className="cart-checkout-note">
+                    Payment and order placement are not connected yet.
+                  </p>
                 </aside>
               </div>
             )}
@@ -848,7 +1399,12 @@ function Home() {
           <section className="content-section">
             {selectedRestaurant ? (
               <>
-                <button className="category-button" onClick={() => setSelectedRestaurant(null)}>← Back to restaurants</button>
+                <button
+                  className="category-button"
+                  onClick={() => setSelectedRestaurant(null)}
+                >
+                  ← Back to restaurants
+                </button>
 
                 <div className="restaurant-menu-heading">
                   <img src={selectedRestaurant.image} alt={selectedRestaurant.name} />
@@ -856,38 +1412,60 @@ function Home() {
                     <p className="eyebrow">{selectedRestaurant.cuisine} CUISINE</p>
                     <h2>{selectedRestaurant.name}</h2>
                     <p>{selectedRestaurant.description}</p>
-                    <p>⭐ {selectedRestaurant.rating} · {selectedRestaurant.deliveryTime}</p>
+                    <p>
+                      ⭐ {selectedRestaurant.rating} · {selectedRestaurant.deliveryTime}
+                    </p>
                   </div>
                 </div>
 
                 <div className="section-heading">
                   <h2>Restaurant menu</h2>
-                  <span className="dish-count">{selectedRestaurant.menu.length} dishes</span>
+                  <span className="dish-count">
+                    {selectedRestaurant.menu.length} dishes
+                  </span>
                 </div>
 
                 <div className="dish-grid">
-                  {selectedRestaurant.menu.map((dish) => renderDishCard({
-                    ...dish,
-                    cuisine: selectedRestaurant.cuisine,
-                    restaurantName: selectedRestaurant.name,
-                  }))}
+                  {selectedRestaurant.menu.map((dish) =>
+                    renderDishCard({
+                      ...dish,
+                      cuisine: selectedRestaurant.cuisine,
+                      restaurantName: selectedRestaurant.name,
+                    })
+                  )}
                 </div>
               </>
             ) : (
               <>
                 <div className="section-heading">
-                  <div><p className="eyebrow">FIND YOUR NEXT FAVOURITE</p><h2>Restaurants, cafes and more</h2></div>
+                  <div>
+                    <p className="eyebrow">FIND YOUR NEXT FAVOURITE</p>
+                    <h2>Restaurants, cafes and more</h2>
+                  </div>
                 </div>
 
                 <div className="search-box restaurant-search">
                   <span>⌕</span>
-                  <input type="text" placeholder="Search restaurants, cafes or cuisines..." value={restaurantSearch} onChange={(event) => setRestaurantSearch(event.target.value)} />
+                  <input
+                    type="text"
+                    placeholder="Search restaurants, cafes or cuisines..."
+                    value={restaurantSearch}
+                    onChange={(event) => setRestaurantSearch(event.target.value)}
+                  />
                 </div>
 
                 <div className="restaurant-grid">
                   {filteredRestaurants.map((restaurant) => (
-                    <button key={restaurant.id} className="restaurant-card" onClick={() => setSelectedRestaurant(restaurant)}>
-                      <img src={restaurant.image} alt={restaurant.name} className="restaurant-image" />
+                    <button
+                      key={restaurant.id}
+                      className="restaurant-card"
+                      onClick={() => setSelectedRestaurant(restaurant)}
+                    >
+                      <img
+                        src={restaurant.image}
+                        alt={restaurant.name}
+                        className="restaurant-image"
+                      />
 
                       <div className="restaurant-info">
                         <h3>{restaurant.name}</h3>
@@ -903,8 +1481,99 @@ function Home() {
                   ))}
                 </div>
 
-                {filteredRestaurants.length === 0 && <p className="empty-results">No restaurants found. Try another search.</p>}
+                {filteredRestaurants.length === 0 && (
+                  <p className="empty-results">
+                    No restaurants found. Try another search.
+                  </p>
+                )}
               </>
+            )}
+          </section>
+        ) : activeView === 'search-results' ? (
+          <section className="content-section search-results-page">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">YOUR SEARCH, YOUR CHOICES</p>
+                <h2>
+                  {appliedFilters.search
+                    ? `Results for "${appliedFilters.search}"`
+                    : 'Dishes matching your filters'}
+                </h2>
+                <p>
+                  {appliedFilters.dietFilter !== 'all'
+                    ? `Diet: ${
+                        appliedFilters.dietFilter === 'vegetarian'
+                          ? 'Vegetarian'
+                          : 'Non-vegetarian'
+                      } · `
+                    : ''}
+                  {appliedFilters.minPrice !== ''
+                    ? `Min: ₹${appliedFilters.minPrice} · `
+                    : ''}
+                  {appliedFilters.maxPrice !== ''
+                    ? `Max: ₹${appliedFilters.maxPrice} · `
+                    : ''}
+                  {appliedFilters.sortBy === 'price-low'
+                    ? 'Sorted by lowest price'
+                    : appliedFilters.sortBy === 'price-high'
+                      ? 'Sorted by highest price'
+                      : appliedFilters.sortBy === 'name'
+                        ? 'Sorted by name'
+                        : 'Default order'}
+                </p>
+              </div>
+
+              <span className="dish-count">
+                {filteredDishes.length}{' '}
+                {filteredDishes.length === 1 ? 'dish found' : 'dishes found'}
+              </span>
+            </div>
+
+            <div className="food-filter-actions" style={{ marginBottom: '24px' }}>
+              <button
+                type="button"
+                className="clear-filters-button"
+                onClick={editFoodSearch}
+              >
+                ← Edit search
+              </button>
+
+              <button
+                type="button"
+                className="clear-filters-button"
+                onClick={() => selectCategory('All Food')}
+              >
+                Back to discover
+              </button>
+
+              <button
+                type="button"
+                className="clear-filters-button"
+                onClick={clearFoodFilters}
+              >
+                Clear all filters <span>×</span>
+              </button>
+            </div>
+
+            {filteredDishes.length > 0 ? (
+              <div className="dish-grid">
+                {filteredDishes.map((dish) => renderDishCard(dish))}
+              </div>
+            ) : (
+              <div className="empty-results">
+                <h3>No matching dishes found</h3>
+                <p>
+                  Try another dish name, change your dietary preference, or
+                  increase your price range to discover more food.
+                </p>
+                <button
+                  type="button"
+                  className="clear-filters-button"
+                  onClick={editFoodSearch}
+                >
+                  Change search filters
+                </button>
+              </div>
             )}
           </section>
         ) : (
@@ -913,11 +1582,134 @@ function Home() {
               <span>⌕</span>
               <input
                 type="text"
-                placeholder={`Search ${activeCategory === 'All Food' ? 'dishes, cuisines or restaurants' : activeCategory.toLowerCase() + ' dishes'}...`}
+                placeholder={`Search ${
+                  activeCategory === 'All Food'
+                    ? 'dishes, cuisines or restaurants'
+                    : activeCategory.toLowerCase() + ' dishes'
+                }...`}
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') applyFoodFilters()
+                }}
               />
             </div>
+            
+
+            {/* Updated Finds food search and filters */}
+            <section className="food-filter-section">
+              <div className="food-filter-header">
+                <div>
+                  <p className="food-filter-eyebrow">
+                    PERSONALIZED FOOD DISCOVERY
+                  </p>
+
+                  <h2>Find your perfect meal</h2>
+
+                  <p>
+                    Choose your preferences and discover food made for your cravings.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="hide-filters-button"
+                  onClick={() => setShowFilters((current) => !current)}
+                  aria-expanded={showFilters}
+                >
+                  <span>{showFilters ? '−' : '+'}</span>
+                  {showFilters ? 'Hide filters' : 'Filters'}
+                </button>
+              </div>
+
+              {showFilters && (
+                <div className="food-filter-fields">
+                  <div className="food-filter-field">
+                    <label htmlFor="food-diet-filter">
+                      Dietary preference
+                    </label>
+                    <select
+                      id="food-diet-filter"
+                      value={dietFilter}
+                      onChange={(event) => setDietFilter(event.target.value)}
+                    >
+                      <option value="all">All dietary types</option>
+                      <option value="vegetarian">Vegetarian</option>
+                      <option value="non-vegetarian">Non-vegetarian</option>
+                    </select>
+                  </div>
+
+                  <div className="food-filter-field">
+                    <label htmlFor="food-min-price">
+                      Minimum price (₹)
+                    </label>
+                    <input
+                      id="food-min-price"
+                      type="number"
+                      min="0"
+                      placeholder="No minimum"
+                      value={minPrice}
+                      onChange={(event) => setMinPrice(event.target.value)}
+                    />
+                  </div>
+
+                  <div className="food-filter-field">
+                    <label htmlFor="food-max-price">
+                      Maximum price (₹)
+                    </label>
+                    <input
+                      id="food-max-price"
+                      type="number"
+                      min="0"
+                      placeholder="No maximum"
+                      value={maxPrice}
+                      onChange={(event) => setMaxPrice(event.target.value)}
+                    />
+                  </div>
+
+                  <div className="food-filter-field">
+                    <label htmlFor="food-sort-filter">
+                      Sort results
+                    </label>
+                    <select
+                      id="food-sort-filter"
+                      value={sortBy}
+                      onChange={(event) => setSortBy(event.target.value)}
+                    >
+                      <option value="popular">Default order</option>
+                      <option value="price-low">Price: low to high</option>
+                      <option value="price-high">Price: high to low</option>
+                      <option value="name">Name: A–Z</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <div className="food-filter-actions">
+                <button
+                  type="button"
+                  className="search-dishes-button"
+                  onClick={applyFoodFilters}
+                >
+                  <span className="search-button-icon">⌕</span>
+                  <span>Search dishes</span>
+                  <span className="search-button-arrow">→</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="clear-filters-button"
+                  onClick={clearFoodFilters}
+                >
+                  Clear filters <span>×</span>
+                </button>
+              </div>
+
+              <p className="filter-helper-text">
+                Your preferences will be applied when you search.
+              </p>
+            </section>
+
             {isMainFoodPage && (
               <section className="finds-discover-hero">
                 <div className="finds-hero-content">
@@ -944,6 +1736,10 @@ function Home() {
                         setActiveCategory('All Food')
                         setActiveCuisine('All')
                         setSearch('')
+                        setAppliedFilters((current) => ({
+                          ...current,
+                          search: '',
+                        }))
                       }}
                     >
                       Explore food <span>→</span>
@@ -987,17 +1783,32 @@ function Home() {
             {isMainFoodPage && (
               <section className="content-section">
                 <div className="section-heading">
-                  <div><p className="eyebrow">EXPLORE THE WORLD OF FOOD</p><h2>Explore cuisines</h2></div>
+                  <div>
+                    <p className="eyebrow">EXPLORE THE WORLD OF FOOD</p>
+                    <h2>Explore cuisines</h2>
+                  </div>
                 </div>
 
                 <div className="cuisine-grid">
                   {cuisines.map((cuisine) => (
-                    <button key={cuisine.name} className={`cuisine-card ${activeCuisine === cuisine.name ? 'selected' : ''}`} onClick={() => selectCuisine(cuisine.name)}>
-                      <img className="cuisine-image" src={cuisine.image} alt={`${cuisine.name} cuisine`} />
+                    <button
+                      key={cuisine.name}
+                      className={`cuisine-card ${
+                        activeCuisine === cuisine.name ? 'selected' : ''
+                      }`}
+                      onClick={() => selectCuisine(cuisine.name)}
+                    >
+                      <img
+                        className="cuisine-image"
+                        src={cuisine.image}
+                        alt={`${cuisine.name} cuisine`}
+                      />
 
                       <div className="cuisine-card-info">
                         <strong>{cuisine.name}</strong>
-                        <span className="cuisine-description">{cuisine.description}</span>
+                        <span className="cuisine-description">
+                          {cuisine.description}
+                        </span>
                       </div>
                     </button>
                   ))}
@@ -1008,36 +1819,52 @@ function Home() {
             <section className="content-section">
               <div className="section-heading">
                 <div>
-                  <p className="eyebrow">{activeCategory === 'All Food' ? 'HANDPICKED FOR YOU' : `EXPLORE OUR ${activeCategory.toUpperCase()} MENU`}</p>
+                  <p className="eyebrow">
+                    {activeCategory === 'All Food'
+                      ? 'HANDPICKED FOR YOU'
+                      : `EXPLORE OUR ${activeCategory.toUpperCase()} MENU`}
+                  </p>
 
                   <h2>
                     {activeCategory !== 'All Food'
                       ? `${activeCategory} Options`
                       : activeCuisine !== 'All'
                         ? `${activeCuisine} Dishes`
-                        : search.trim()
+                        : appliedFilters.search.trim()
                           ? 'Search results'
                           : 'Popular dishes'}
                   </h2>
                 </div>
 
-                <span className="dish-count">{filteredDishes.length} {filteredDishes.length === 1 ? 'dish' : 'dishes'}</span>
+                <span className="dish-count">
+                  {filteredDishes.length}{' '}
+                  {filteredDishes.length === 1 ? 'dish' : 'dishes'}
+                </span>
               </div>
 
-              {(activeCategory !== 'All Food' || activeCuisine !== 'All' || search.trim()) && (
-                <button className="category-button" onClick={() => {
-                  setActiveCategory('All Food')
-                  setActiveCuisine('All')
-                  setSearch('')
-                }}>
-                  Clear filters ×
+              {(activeCategory !== 'All Food' ||
+                activeCuisine !== 'All' ||
+                appliedFilters.search.trim() ||
+                appliedFilters.dietFilter !== 'all' ||
+                appliedFilters.minPrice !== '' ||
+                appliedFilters.maxPrice !== '' ||
+                appliedFilters.sortBy !== 'popular') && (
+                <button
+                  className="clear-filters-button"
+                  onClick={clearFoodFilters}
+                >
+                  Clear filters <span>×</span>
                 </button>
               )}
 
               {filteredDishes.length > 0 ? (
-                <div className="dish-grid">{filteredDishes.map((dish) => renderDishCard(dish))}</div>
+                <div className="dish-grid">
+                  {filteredDishes.map((dish) => renderDishCard(dish))}
+                </div>
               ) : (
-                <p className="empty-results">No dishes found in this category yet. Try another category or search.</p>
+                <p className="empty-results">
+                  No dishes match your current filters. Try changing your search or price range.
+                </p>
               )}
             </section>
           </>
