@@ -1594,7 +1594,6 @@ function Home() {
                 }}
               />
             </div>
-            
 
             {/* Updated Finds food search and filters */}
             <section className="food-filter-section">
