@@ -1,4 +1,5 @@
-import { useState } from 'react'
+
+import { useEffect, useRef, useState } from 'react'
 
 const wellnessMeals = [
   {
@@ -100,9 +101,133 @@ const dietGoals = [
   'Vegan',
 ]
 
+const suggestedQuestions = [
+  'Suggest a healthy vegetarian dinner.',
+  'What can I eat for more protein?',
+  'Suggest some budget-friendly healthy meals.',
+  'How can I build a balanced daily meal plan?',
+]
+
 function FindsWellness({ onAddToCart, cart, onChangeQuantity }) {
   const [selectedGoal, setSelectedGoal] = useState('All Goals')
   const [search, setSearch] = useState('')
+
+  // AI chat state
+  const [messages, setMessages] = useState([])
+  const [chatInput, setChatInput] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [chatError, setChatError] = useState('')
+  const messagesEndRef = useRef(null)
+  const chatInputRef = useRef(null)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+    })
+  }, [messages, isSending])
+
+  const sendMessage = async (event, suggestedMessage) => {
+    event?.preventDefault()
+
+    const message = (suggestedMessage ?? chatInput).trim()
+
+    if (!message || isSending) return
+
+    if (message.length > 4000) {
+      setChatError('Please keep your message under 4,000 characters.')
+      return
+    }
+
+    setChatError('')
+    setChatInput('')
+
+    // Keep the conversation that came before the new message.
+    // The backend adds the current message itself.
+    const history = messages
+      .filter(
+        (item) =>
+          !item.isError &&
+          (item.role === 'user' || item.role === 'assistant')
+      )
+      .slice(-10)
+      .map((item) => ({
+        role: item.role === 'assistant' ? 'model' : 'user',
+        text: item.text,
+      }))
+
+    setMessages((previous) => [
+      ...previous,
+      {
+        id: `${Date.now()}-user`,
+        role: 'user',
+        text: message,
+      },
+    ])
+
+    setIsSending(true)
+
+    try {
+      const response = await fetch(
+        'http://127.0.0.1:5000/api/ai/wellness-chat',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message,
+            history,
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message || 'Unable to get a response from Finds Wellness.'
+        )
+      }
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: `${Date.now()}-assistant`,
+          role: 'assistant',
+          text: data.reply,
+        },
+      ])
+    } catch (error) {
+      const isConnectionError =
+        error instanceof TypeError
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: `${Date.now()}-error`,
+          role: 'assistant',
+          isError: true,
+          text: isConnectionError
+            ? 'I could not connect to the Finds server. Please make sure your backend is running on port 5000 and try again.'
+            : error.message ||
+              'Something went wrong. Please try sending your message again.',
+        },
+      ])
+    } finally {
+      setIsSending(false)
+      chatInputRef.current?.focus()
+    }
+  }
+
+  const startNewChat = () => {
+    if (isSending) return
+
+    setMessages([])
+    setChatInput('')
+    setChatError('')
+    chatInputRef.current?.focus()
+  }
 
   const filteredMeals = wellnessMeals.filter((meal) => {
     const matchesGoal =
@@ -135,6 +260,193 @@ function FindsWellness({ onAddToCart, cart, onChangeQuantity }) {
         <div className="wellness-hero-icon">🌱</div>
       </div>
 
+      {/* Finds Wellness AI Chat */}
+      <section className="wellness-chat" aria-label="Finds Wellness AI chat">
+        <div className="wellness-chat-header">
+          <div className="wellness-chat-heading">
+            <div className="wellness-chat-avatar" aria-hidden="true">
+              🌿
+            </div>
+
+            <div>
+              <span className="wellness-kicker">YOUR FOOD COMPANION</span>
+              <h2>Ask Finds Wellness</h2>
+              <p>
+                Talk about food, nutrition, recipes, cravings and meal ideas.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="wellness-chat-new"
+            onClick={startNewChat}
+            disabled={isSending}
+          >
+            + New Chat
+          </button>
+        </div>
+
+        <div
+          className="wellness-chat-messages"
+          aria-live="polite"
+          aria-label="Conversation"
+        >
+          {messages.length === 0 ? (
+            <div className="wellness-chat-welcome">
+              <div className="wellness-chat-welcome-icon">🥗</div>
+              <h3>What would you like to eat or know today?</h3>
+              <p>
+                Ask me a question naturally. I can help you explore food,
+                understand nutrition basics, and find ideas that suit your
+                preferences.
+              </p>
+
+              <div className="wellness-chat-suggestions">
+                {suggestedQuestions.map((question) => (
+                  <button
+                    type="button"
+                    key={question}
+                    onClick={() => sendMessage(null, question)}
+                    disabled={isSending}
+                  >
+                    {question}
+                    <span aria-hidden="true"> ↗</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`wellness-chat-message ${
+                    message.role === 'user'
+                      ? 'wellness-chat-message-user'
+                      : 'wellness-chat-message-assistant'
+                  }`}
+                >
+                  {message.role === 'assistant' && (
+                    <span className="wellness-chat-message-avatar">
+                      🌿
+                    </span>
+                  )}
+
+                  <div className="wellness-chat-bubble">
+                    <span className="wellness-chat-sender">
+                      {message.role === 'user'
+                        ? 'You'
+                        : message.isError
+                          ? 'Connection notice'
+                          : 'Finds Wellness'}
+                    </span>
+                    <p>{message.text}</p>
+                  </div>
+                </div>
+              ))}
+
+              {isSending && (
+                <div
+                  className="wellness-chat-message wellness-chat-message-assistant"
+                  role="status"
+                  aria-label="Finds Wellness is thinking"
+                >
+                  <span className="wellness-chat-message-avatar">🌿</span>
+                  <div className="wellness-chat-bubble wellness-chat-typing">
+                    <span>Finds Wellness is thinking</span>
+                    <span className="wellness-chat-typing-dots">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {messages.length > 0 && !isSending && (
+          <div className="wellness-chat-followups">
+            <span>Try asking:</span>
+            {suggestedQuestions.slice(0, 2).map((question) => (
+              <button
+                type="button"
+                key={question}
+                onClick={() => sendMessage(null, question)}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {chatError && (
+          <p className="wellness-chat-error" role="alert">
+            {chatError}
+          </p>
+        )}
+
+        <form
+          className="wellness-chat-form"
+          onSubmit={(event) => sendMessage(event)}
+        >
+          <label className="wellness-chat-input-label" htmlFor="wellness-chat-input">
+            Message Finds Wellness
+          </label>
+
+          <div className="wellness-chat-input-row">
+            <textarea
+              id="wellness-chat-input"
+              ref={chatInputRef}
+              value={chatInput}
+              onChange={(event) => {
+                setChatInput(event.target.value)
+                if (chatError) setChatError('')
+              }}
+              onKeyDown={(event) => {
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault()
+                  sendMessage()
+                }
+              }}
+              placeholder="Ask anything about food or healthy eating..."
+              rows={2}
+              maxLength={4000}
+              disabled={isSending}
+            />
+
+            <button
+              type="submit"
+              className="wellness-chat-send"
+              disabled={isSending || !chatInput.trim()}
+              aria-label="Send message"
+            >
+              {isSending ? '...' : 'Send ↗'}
+            </button>
+          </div>
+
+          <div className="wellness-chat-input-footer">
+            <span>AI-generated guidance can make mistakes.</span>
+            <span>{chatInput.length}/4000</span>
+          </div>
+        </form>
+
+        <p className="wellness-chat-disclaimer">
+          Finds Wellness provides general food and nutrition information, not
+          medical diagnosis or treatment. For allergies, verify ingredients
+          and cross-contamination details with the food provider.
+        </p>
+      </section>
+
+      {/* Existing meal discovery and cart features */}
       <div className="wellness-intro">
         <div>
           <p className="eyebrow">PERSONALISE YOUR PLATE</p>

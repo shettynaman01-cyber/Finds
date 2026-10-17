@@ -8,7 +8,7 @@ import FoodDetailsModal from './FoodDetailsModal'
 
 const categories = [
   'All Food', 'Breakfast', 'Lunch', 'Dinner',
-  'Snacks', 'Desserts', 'Sweets', 'Beverages',
+  'Snacks', 'Desserts', 'Beverages'
 ]
 
 const cuisines = [
@@ -1710,73 +1710,127 @@ function Home() {
             </section>
 
             {isMainFoodPage && (
-              <section className="finds-discover-hero">
-                <div className="finds-hero-content">
-                  <span className="finds-hero-badge">
-                    ✨ YOUR NEXT FAVOURITE MEAL
-                  </span>
+              <>
+                <section className="finds-discover-hero finds-discover-hero-v2">
+                  <div className="finds-hero-content">
+                    <span className="finds-hero-badge">
+                      ✨ GOOD FOOD IS CALLING
+                    </span>
 
-                  <h2>
-                    Good food.
-                    <br />
-                    <span>Great mood.</span>
-                  </h2>
+                    <h2>
+                      Big cravings.
+                      <br />
+                      <span>Bold flavours.</span>
+                    </h2>
 
-                  <p>
-                    Explore amazing cuisines, discover local favourites,
-                    and find something delicious for every craving.
-                  </p>
+                    <p>
+                      From comfort-food classics to your next obsession,
+                      discover dishes worth getting excited about.
+                    </p>
 
-                  <div className="finds-hero-actions">
-                    <button
-                      type="button"
-                      className="finds-hero-primary"
-                      onClick={() => {
-                        setActiveCategory('All Food')
-                        setActiveCuisine('All')
-                        setSearch('')
-                        setAppliedFilters((current) => ({
-                          ...current,
-                          search: '',
-                        }))
-                      }}
-                    >
-                      Explore food <span>→</span>
-                    </button>
+                    <div className="finds-hero-actions">
+                      <button
+                        type="button"
+                        className="finds-hero-primary"
+                        onClick={() => {
+                          setActiveCategory('All Food')
+                          setActiveCuisine('All')
+                          setSearch('')
+                          setAppliedFilters((current) => ({
+                            ...current,
+                            search: '',
+                          }))
+                          setActiveView('food')
+                        }}
+                      >
+                        Explore the menu <span>→</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      className="finds-hero-secondary"
-                      onClick={openRestaurants}
-                    >
-                      Find restaurants
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        className="finds-hero-secondary"
+                        onClick={openRestaurants}
+                      >
+                        Browse restaurants
+                      </button>
+                    </div>
 
-                  <div className="finds-hero-note">
-                    <span>🍕</span>
-                    <span>Cravings welcome. Deliciousness guaranteed.</span>
-                  </div>
-                </div>
-
-                <div className="finds-hero-visual">
-                  <img
-                    src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=1000&q=85"
-                    alt="A delicious spread of freshly prepared food"
-                  />
-
-                  <div className="finds-hero-floating-card">
-                    <span className="finds-floating-icon">😋</span>
-                    <div>
-                      <strong>Made for your cravings</strong>
-                      <span>Discover your next favourite</span>
+                    <div className="finds-hero-trust-row">
+                      <span><strong>01</strong> Find your craving</span>
+                      <span><strong>02</strong> Pick your favourite</span>
+                      <span><strong>03</strong> Enjoy every bite</span>
                     </div>
                   </div>
 
-                  <span className="finds-hero-decoration finds-decoration-one">✦</span>
-                  <span className="finds-hero-decoration finds-decoration-two">✳</span>
-                </div>
-              </section>
+                  <div className="finds-hero-visual">
+                    <img
+                      src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=1100&q=85"
+                      alt="A colourful spread of freshly prepared food"
+                    />
+
+                    <div className="finds-hero-image-tag">
+                      <span className="finds-floating-icon">🍽️</span>
+                      <div>
+                        <strong>What are you craving?</strong>
+                        <span>Your next favourite is waiting.</span>
+                      </div>
+                    </div>
+
+                    <div className="finds-hero-sticker">
+                      <span>MADE FOR</span>
+                      <strong>FOODIES</strong>
+                      <span>♥ FINDS</span>
+                    </div>
+
+                    <span className="finds-hero-decoration finds-decoration-one">✦</span>
+                    <span className="finds-hero-decoration finds-decoration-two">✳</span>
+                  </div>
+                </section>
+
+                <section className="finds-quick-categories" aria-label="Popular food categories">
+                  <div className="finds-quick-categories-heading">
+                    <div>
+                      <p className="eyebrow">WHAT ARE YOU IN THE MOOD FOR?</p>
+                      <h2>Cravings, sorted.</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => selectCategory('All Food')}
+                    >
+                      See all food <span>→</span>
+                    </button>
+                  </div>
+
+                  <div className="finds-quick-category-grid">
+                    {[
+                      { name: 'Breakfast', subtitle: 'Start fresh', emoji: '🍳' },
+                      { name: 'Lunch', subtitle: 'Midday favourites', emoji: '🍱' },
+                      { name: 'Dinner', subtitle: 'Make it a feast', emoji: '🍛' },
+                      { name: 'Snacks', subtitle: 'Little cravings', emoji: '🍟' },
+                      { name: 'Desserts', subtitle: 'Sweet endings', emoji: '🍰' },
+                      { name: 'Beverages', subtitle: 'Sip something good', emoji: '🥤' },
+                    ].map((category) => (
+                      <button
+                        type="button"
+                        key={category.name}
+                        className={`finds-quick-category ${
+                          activeCategory === category.name ? 'selected' : ''
+                        }`}
+                        onClick={() => selectCategory(category.name)}
+                      >
+                        <span className="finds-quick-category-emoji" aria-hidden="true">
+                          {category.emoji}
+                        </span>
+                        <span className="finds-quick-category-copy">
+                          <strong>{category.name}</strong>
+                          <small>{category.subtitle}</small>
+                        </span>
+                        <span className="finds-quick-category-arrow" aria-hidden="true">↗</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </>
             )}
 
             {isMainFoodPage && (
